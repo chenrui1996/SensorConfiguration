@@ -1,0 +1,151 @@
+﻿<Window x:Class="SensorConfiguration.Views.Dialogs.ScanDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:hc="https://handyorg.github.io/handycontrol" 
+        xmlns:local="clr-namespace:SensorConfiguration.Views.Dialogs"
+        mc:Ignorable="d"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        WindowStartupLocation="CenterScreen"
+        Background="WhiteSmoke"
+        ResizeMode="CanMinimize"
+        BorderBrush="DarkGray"
+        BorderThickness="1"
+        Title="ScanDialog" 
+        Height="450"
+        Width="300">
+    <Window.Effect>
+        <DropShadowEffect 
+            ShadowDepth="50" 
+            Direction="270" 
+            Color="Gray" 
+            Opacity="0.5"/>
+    </Window.Effect>
+    <Border Effect="{StaticResource EffectShadow1}">
+        <Grid
+            Grid.RowSpan="1"
+            Grid.ColumnSpan="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition />
+                <RowDefinition Height="50"/>
+            </Grid.RowDefinitions>
+            <StackPanel 
+                Grid.Row="0"
+                Background="#3f3f41"
+                MouseDown="TitleBar_MouseDown"
+                Orientation="Vertical"
+                >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="40"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="1"
+                         Background="#3f3f41"
+                         BorderBrush="#3f3f41"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                         Height="50"
+                         FontSize="15"
+                         Foreground ="White"
+                         FontWeight="Bold"
+                         Content="添加设备">
+
+                    </Label>
+                    <Button Grid.Column="2"
+                        Click="Close_Click"
+                        Width="30" 
+                        Height="30"
+                        Background="#3f3f41"
+                        BorderBrush="#3f3f41">
+                        <hc:ImageBlock 
+                            Source="/Assets/Images/menu_close.png" 
+                            Width="20" 
+                            Height="20"
+                            ToolTip="Legrand"
+                        />
+                    </Button>
+                </Grid>
+            </StackPanel>
+            <StackPanel 
+                Grid.Row="1"
+                Background="WhiteSmoke"
+                Orientation="Horizontal"
+                Width="300"
+                >
+                <CheckBox Content="默认密码"
+                    Margin="10,0,0,0"
+                    IsChecked="{Binding DefultPasswordFlag}"
+                    IsEnabled="{Binding DefultPasswordEnabled}">
+                </CheckBox>
+                <CheckBox Content="新设备"
+                    Margin="12,0,0,0"
+                    IsChecked="{Binding NewDeviceFlag}"
+                    IsEnabled="{Binding NewDeviceEnabled}">
+                </CheckBox>
+                <Button
+                    Margin="20,0,0,0"
+                    Content="连接并登录"
+                    Padding="0"
+                    Command="{Binding StartScanCommand}"
+                    Width="100" 
+                    Height="34"
+                    Style="{StaticResource ButtonPrimary}"
+                    BorderBrush="DarkGray">
+                </Button>
+            </StackPanel>
+            <ListView Grid.Row="2"
+                Padding="0"
+                Background="WhiteSmoke"
+                ItemsSource="{Binding UseableBluetooths}"  
+                SelectedItem="{Binding SelectedUseableBluetooth}"
+                SelectionMode ="Single">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel 
+                            Width="260"
+                            Background="WhiteSmoke"
+                            Orientation="Vertical"
+                            >
+                            <Label 
+                                Width="260"
+                                FontSize="14"
+                                FontWeight="Bold"
+                                Foreground="Black"
+                                Background="WhiteSmoke"
+                                BorderBrush="WhiteSmoke"
+                                VerticalAlignment="Center"
+                                Content="{Binding Name}"
+                            ></Label>
+                            <Label 
+                                Width="260"
+                                FontSize="12"
+                                Foreground="Black"
+                                 Background="WhiteSmoke"
+                                BorderBrush="WhiteSmoke"
+                                Content="{Binding Address}"
+                                ></Label>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <Button
+                Grid.Row="3"
+                Content="扫 描"
+                Padding="0"
+                Command="{Binding StartScanCommand}"
+                Width="290" 
+                Height="40"
+                Background="#3f3f41"
+                Style="{StaticResource ButtonPrimary}"
+                BorderBrush="DarkGray">
+            </Button>
+        </Grid>
+    </Border>
+
+</Window>

@@ -1,0 +1,198 @@
+﻿<Window x:Class="SensorConfiguration.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SensorConfiguration.ViewModel"
+        xmlns:hc="https://handyorg.github.io/handycontrol" 
+        mc:Ignorable="d"
+        Title="MainWindow"
+        Height="655"
+        Width="960" 
+        WindowStyle="None" 
+        Background="WhiteSmoke"
+        ResizeMode="CanMinimize"
+        BorderBrush="DarkGray"
+        BorderThickness="1"
+        >
+    <Window.Effect>
+        <DropShadowEffect 
+            ShadowDepth="50" 
+            Direction="270" 
+            Color="Gray" 
+            Opacity="0.5"/>
+    </Window.Effect>
+    <Window.DataContext>
+        <local:MainWindowViewModel />
+    </Window.DataContext>
+    <Border Effect="{StaticResource EffectShadow1}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Row="0" Grid.Column="0" Margin="0" >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="55"/>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Border
+                        Grid.Row="0"
+                        Background="White"
+                        MouseDown="TitleBar_MouseDown">
+                        
+                        <Button
+                            Padding="0"
+                            Command="{Binding SelectCmd}" 
+                            Width="40" 
+                            Height="40"
+                            BorderBrush="White">
+                            <hc:ImageBlock 
+                                Source="/Assets/Images/logo.png" 
+                                Width="40" 
+                                Height="40"
+                                ToolTip="Legrand"
+                            />
+                        </Button>
+
+                    </Border>
+                    <hc:SideMenu 
+                        Grid.Row="1"
+                        Width="60" 
+                        AutoSelect="True"
+                        BorderBrush="#3f3f41"
+                    >
+                        <hc:Interaction.Triggers>
+                            <hc:EventTrigger EventName="SelectionChanged">
+                                <hc:EventToCommand Command="{Binding SwitchItemCmd}" PassEventArgsToCommand="True" />
+                            </hc:EventTrigger>
+                        </hc:Interaction.Triggers>
+                        <hc:SideMenuItem 
+                            Margin="0,15,0,0"
+                            ToolTip="基础功能"
+                            Name="Operation"
+                            Height="50"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Command="{Binding SelectCmd}" 
+                            CommandParameter="{Binding .,RelativeSource={RelativeSource Self}}"
+                            >
+                            <hc:SideMenuItem.Icon >
+                                <Image Source="/Assets/Images/menu_dashbord.png" Width="30" Height="30"/>
+                            </hc:SideMenuItem.Icon>
+
+                        </hc:SideMenuItem>
+                        <hc:SideMenuItem 
+                            ToolTip="自动化测试"
+                            Name="AutoTest"
+                            Command="{Binding SelectCmd}" 
+                            CommandParameter="{Binding .,RelativeSource={RelativeSource Self}}"
+                            Height="50"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                            <hc:SideMenuItem.Icon>
+                                <Image Source="/Assets/Images/menu_control.png" Width="30" Height="30"/>
+                            </hc:SideMenuItem.Icon>
+                        </hc:SideMenuItem>
+                        <hc:SideMenuItem 
+                            ToolTip="配置"
+                            Name="Setting"
+                            Command="{Binding SelectCmd}" 
+                            CommandParameter="{Binding .,RelativeSource={RelativeSource Self}}"
+                            Height="50"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                            <hc:SideMenuItem.Icon>
+                                <Image Source="/Assets/Images/menu_config.png" Width="30" Height="30"/>
+                            </hc:SideMenuItem.Icon>
+                        </hc:SideMenuItem>
+                        <hc:SideMenuItem 
+                            ToolTip="日志"
+                            Name="Log"
+                            Command="{Binding SelectCmd}" 
+                            CommandParameter="{Binding .,RelativeSource={RelativeSource Self}}"
+                            Height="50"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                            <hc:SideMenuItem.Icon>
+                                <Image Source="/Assets/Images/menu_log.png" Width="30" Height="30"/>
+                            </hc:SideMenuItem.Icon>
+                        </hc:SideMenuItem>
+                    </hc:SideMenu>
+                </Grid>
+            </Grid>
+            <Grid Grid.Row="0" Grid.Column="1" Margin="0" >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="55"/>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <StackPanel 
+                    Grid.Row="0"
+                    Background="#3f3f41"
+                    MouseDown="TitleBar_MouseDown"
+                    Orientation="Horizontal"
+                    >
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="40"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Label
+                                Grid.Column="2"
+                                Background="#3f3f41"
+                                BorderBrush="#3f3f41"
+                                Height="55"
+                                Width="730"
+                                FontSize="15"
+                                Foreground ="White"
+                                FontWeight="Bold"
+                                Content="{Binding PageTitle}"
+                            >
+                            </Label>
+                            <Button Grid.Column="3"
+                            Click="Minimize_Click"
+                            Width="30" 
+                            Height="30"
+                            Background="#3f3f41"
+                            BorderBrush="#3f3f41">
+                                <hc:ImageBlock 
+                                Source="/Assets/Images/menu_minimize.png" 
+                                Width="20" 
+                                Height="20"
+                                ToolTip="Legrand"
+                            />
+                            </Button>
+                            <Button Grid.Column="4"
+                                Click="Close_Click"
+                                Width="30" 
+                                Height="30"
+                                Background="#3f3f41"
+                                BorderBrush="#3f3f41">
+                                <hc:ImageBlock 
+                                Source="/Assets/Images/menu_close.png" 
+                                Width="20" 
+                                Height="20"
+                                ToolTip="Legrand"
+                            />
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                    <Frame 
+                    Grid.Row="1"
+                    NavigationUIVisibility="Hidden"
+                    Content="{Binding CurrentPage}" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+
+</Window>
