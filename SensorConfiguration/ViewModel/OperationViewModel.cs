@@ -23,6 +23,7 @@ using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
 using Plugin.BLE;
 using System.Windows;
+using System.Collections.Concurrent;
 
 namespace SensorConfiguration.ViewModel
 {
@@ -42,7 +43,7 @@ namespace SensorConfiguration.ViewModel
         /// <summary>
         /// 设备信息
         /// </summary>
-        private Dictionary<Guid, IDevice> _deviceDic = DeviceInfo.DeviceDic;
+        private ConcurrentDictionary<Guid, IDevice> _deviceDic = DeviceInfo.DeviceDic;
         #endregion
 
         #region UI
@@ -220,7 +221,7 @@ namespace SensorConfiguration.ViewModel
                     }
                     if (!_deviceDic.ContainsKey(a.Device.Id))
                     {
-                        _deviceDic.Add(a.Device.Id, a.Device);
+                        _deviceDic.TryAdd(a.Device.Id, a.Device);
                     }
                     var address = GetDeviceAddress(a.Device);
                     if (UseableBluetooths.All(r => r.Id != a.Device.Id))

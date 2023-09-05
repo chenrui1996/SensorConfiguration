@@ -38,5 +38,12 @@ namespace SensorConfiguration.Views.Dialogs
                 DragMove();
             }
         }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            var scanViewModel = DataContext as ScanViewModel;
+            scanViewModel?.StopScan();
+        }
     }
 }

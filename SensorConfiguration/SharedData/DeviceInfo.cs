@@ -10,7 +10,7 @@ namespace SensorConfiguration.SharedData
 {
     public class DeviceInfo
     {
-        public static Dictionary<Guid, IDevice> DeviceDic = new Dictionary<Guid, IDevice>();
+        public static ConcurrentDictionary<Guid, IDevice> DeviceDic = new ConcurrentDictionary<Guid, IDevice>();
 
         public static ConcurrentDictionary<Guid, DeviceParameters> DeviceParameterDic = new ConcurrentDictionary<Guid, DeviceParameters>();
         

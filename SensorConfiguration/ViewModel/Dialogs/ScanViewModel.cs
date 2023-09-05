@@ -20,6 +20,7 @@ using static SensorConfiguration.Constant.Enums;
 using System.Windows;
 using Plugin.BLE;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.Concurrent;
 
 namespace SensorConfiguration.ViewModel.Dialogs
 {
@@ -39,7 +40,7 @@ namespace SensorConfiguration.ViewModel.Dialogs
         /// <summary>
         /// 设备信息
         /// </summary>
-        private Dictionary<Guid, IDevice> _deviceDic = DeviceInfo.DeviceDic;
+        private ConcurrentDictionary<Guid, IDevice> _deviceDic = DeviceInfo.DeviceDic;
         #endregion
 
         #region UI
@@ -184,7 +185,7 @@ namespace SensorConfiguration.ViewModel.Dialogs
                     }
                     if (!_deviceDic.ContainsKey(a.Device.Id))
                     {
-                        _deviceDic.Add(a.Device.Id, a.Device);
+                        _deviceDic.TryAdd(a.Device.Id, a.Device);
                     }
                     var address = GetDeviceAddress(a.Device);
                     if (UseableBluetooths.All(r => r.Address != address))
@@ -248,6 +249,21 @@ namespace SensorConfiguration.ViewModel.Dialogs
                 return "";
             }
 
+        }
+
+        public void StopScan()
+        {
+            try
+            {
+                if (Adapter.IsScanning)
+                {
+                    Adapter.StopScanningForDevicesAsync();
+                }
+            }
+            catch
+            {
+
+            }
         }
         #endregion
 
