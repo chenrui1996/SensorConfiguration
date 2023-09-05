@@ -13,7 +13,7 @@
         Background="WhiteSmoke"
         ResizeMode="CanMinimize"
         BorderBrush="DarkGray"
-        BorderThickness="1"
+        BorderThickness="1" WindowStartupLocation="CenterScreen"
         >
     <Window.Effect>
         <DropShadowEffect 

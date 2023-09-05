@@ -178,12 +178,16 @@ namespace SensorConfiguration.ViewModel.Dialogs
                     {
                         return;
                     }
+                    if (a.Device.Name.StartsWith("Bluetooth"))
+                    {
+                        return;
+                    }
                     if (!_deviceDic.ContainsKey(a.Device.Id))
                     {
                         _deviceDic.Add(a.Device.Id, a.Device);
                     }
                     var address = GetDeviceAddress(a.Device);
-                    if (UseableBluetooths.All(r => r.Id != a.Device.Id))
+                    if (UseableBluetooths.All(r => r.Address != address))
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {

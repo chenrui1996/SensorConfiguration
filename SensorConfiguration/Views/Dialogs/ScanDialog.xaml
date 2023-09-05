@@ -112,24 +112,42 @@
                             Background="WhiteSmoke"
                             Orientation="Vertical"
                             >
-                            <Label 
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                            </Grid>
+                            <StackPanel 
                                 Width="260"
-                                FontSize="14"
-                                FontWeight="Bold"
-                                Foreground="Black"
+                                Grid.Row="0"
                                 Background="WhiteSmoke"
-                                BorderBrush="WhiteSmoke"
-                                VerticalAlignment="Center"
-                                Content="{Binding Name}"
-                            ></Label>
-                            <Label 
-                                Width="260"
-                                FontSize="12"
-                                Foreground="Black"
-                                 Background="WhiteSmoke"
-                                BorderBrush="WhiteSmoke"
-                                Content="{Binding Address}"
+                                Orientation="Horizontal"
+                                >
+                                <Label 
+                                    FontSize="13"
+                                    FontWeight="Bold"
+                                    Foreground="Black"
+                                    Background="WhiteSmoke"
+                                    BorderBrush="WhiteSmoke"
+                                    Content="{Binding Name}"
                                 ></Label>
+                            </StackPanel>
+
+                            <StackPanel 
+                                Width="260"
+                                Grid.Row="0"
+                                Background="WhiteSmoke"
+                                Orientation="Horizontal"
+                                >
+                                <Label 
+                                    FontSize="12"
+                                    Foreground="Black"
+                                    Background="WhiteSmoke"
+                                    BorderBrush="WhiteSmoke"
+                                    Content="{Binding Address}"
+                                ></Label>
+                            </StackPanel>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
