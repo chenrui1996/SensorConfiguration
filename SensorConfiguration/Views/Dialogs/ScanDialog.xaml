@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:hc="https://handyorg.github.io/handycontrol" 
-        xmlns:local="clr-namespace:SensorConfiguration.Views.Dialogs"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:local="clr-namespace:SensorConfiguration.Converter"
         mc:Ignorable="d"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -23,6 +23,18 @@
             Color="Gray" 
             Opacity="0.5"/>
     </Window.Effect>
+    <Window.Resources>
+        <ResourceDictionary>
+            <local:BoolToColorConverter
+                x:Key="BoolToColorConverter" 
+                TrueColor="#FF326CF3"
+                FalseColor="White" />
+            <local:BoolToTextColorConverter 
+                x:Key="BoolToTextColorConverter" 
+                TrueColor="White"
+                FalseColor="Black" />
+        </ResourceDictionary>
+    </Window.Resources>
     <Border Effect="{StaticResource EffectShadow1}">
         <Grid
             Grid.RowSpan="1"
@@ -92,7 +104,7 @@
                     Margin="20,0,0,0"
                     Content="连接并登录"
                     Padding="0"
-                    Command="{Binding StartScanCommand}"
+                    Command="{Binding ConnectToDeviceCommand}"
                     Width="100" 
                     Height="34"
                     Style="{StaticResource ButtonPrimary}"
@@ -101,7 +113,7 @@
             </StackPanel>
             <ListView Grid.Row="2"
                 Padding="0"
-                Background="WhiteSmoke"
+                Background="White"
                 ItemsSource="{Binding UseableBluetooths}"  
                 SelectedItem="{Binding SelectedUseableBluetooth}"
                 SelectionMode ="Single">
@@ -109,7 +121,6 @@
                     <DataTemplate>
                         <StackPanel 
                             Width="260"
-                            Background="WhiteSmoke"
                             Orientation="Vertical"
                             >
                             <Grid>
@@ -121,15 +132,14 @@
                             <StackPanel 
                                 Width="260"
                                 Grid.Row="0"
-                                Background="WhiteSmoke"
                                 Orientation="Horizontal"
                                 >
                                 <Label 
                                     FontSize="13"
                                     FontWeight="Bold"
-                                    Foreground="Black"
-                                    Background="WhiteSmoke"
-                                    BorderBrush="WhiteSmoke"
+                                    Foreground="{Binding IsSelected, Converter={StaticResource BoolToTextColorConverter}}"
+                                    Background="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
+                                    BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
                                     Content="{Binding Name}"
                                 ></Label>
                             </StackPanel>
@@ -137,14 +147,13 @@
                             <StackPanel 
                                 Width="260"
                                 Grid.Row="0"
-                                Background="WhiteSmoke"
                                 Orientation="Horizontal"
                                 >
                                 <Label 
                                     FontSize="12"
-                                    Foreground="Black"
-                                    Background="WhiteSmoke"
-                                    BorderBrush="WhiteSmoke"
+                                    Foreground="{Binding IsSelected, Converter={StaticResource BoolToTextColorConverter}}"
+                                    Background="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
+                                    BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
                                     Content="{Binding Address}"
                                 ></Label>
                             </StackPanel>
@@ -159,7 +168,7 @@
                 Command="{Binding StartScanCommand}"
                 Width="290" 
                 Height="40"
-                Background="#3f3f41"
+                Background="#FF326CF3"
                 Style="{StaticResource ButtonPrimary}"
                 BorderBrush="DarkGray">
             </Button>

@@ -21,6 +21,9 @@ using System.Windows;
 using Plugin.BLE;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.Concurrent;
+using System.Windows.Controls;
+using Windows.Devices.Enumeration;
+using Plugin.BLE.Abstractions;
 
 namespace SensorConfiguration.ViewModel.Dialogs
 {
@@ -101,7 +104,6 @@ namespace SensorConfiguration.ViewModel.Dialogs
         }
         #endregion
 
-
         #region 扫描
         /// <summary>
         /// 扫描命令
@@ -164,55 +166,57 @@ namespace SensorConfiguration.ViewModel.Dialogs
                 if (Ble.State != BluetoothState.On
                 && Ble.State != BluetoothState.TurningOn)
                 {
-                    await new DialogService().DisplayAlertAsync("提示", "蓝牙未开启！", "OK");
+                    new DialogService().DisplayAlert("提示", "蓝牙未开启！", "OK");
                     return;
                 }
-                if (Adapter.IsScanning)
-                {
-                    await new DialogService().DisplayAlertAsync("提示", "正在扫描中！", "OK");
-                    return;
-                }
+                StopScan();
                 UseableBluetooths.Clear();
-                Adapter.DeviceDiscovered += (s, a) =>
-                {
-                    if (string.IsNullOrWhiteSpace(a.Device.Name))
-                    {
-                        return;
-                    }
-                    if (a.Device.Name.StartsWith("Bluetooth"))
-                    {
-                        return;
-                    }
-                    if (!_deviceDic.ContainsKey(a.Device.Id))
-                    {
-                        _deviceDic.TryAdd(a.Device.Id, a.Device);
-                    }
-                    var address = GetDeviceAddress(a.Device);
-                    if (UseableBluetooths.All(r => r.Address != address))
-                    {
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            UseableBluetooths.Add(new BluetoothItem
-                            {
-                                Id = a.Device.Id,
-                                Name = a.Device.Name,
-                                Rssi = a.Device.Rssi,
-                                Address = address
-                            });
-                        });
-                    }
-                };
                 Adapter.ScanTimeout = 30000;
                 Adapter.ScanMode = ScanMode.Balanced;
                 Adapter.ScanMatchMode = ScanMatchMode.AGRESSIVE;
                 Adapter.LowEnergyFlag = true;
-                StartScanEnabled = false;
+                StartScanEnabled = true;
                 await Adapter.StartScanningForDevicesAsync();
                 StartScanEnabled = true;
             }
             catch (Exception e)
             {
-                await new DialogService().DisplayAlertAsync("提示", e.Message, "OK");
+                new DialogService().DisplayAlert("提示", e.Message, "OK");
+            }
+        }
+
+        private object _lockObj = new object();
+
+        private void DeviceDiscoveredHandle(object? s, DeviceEventArgs? a)
+        {
+            lock (_lockObj)
+            {
+                if (string.IsNullOrWhiteSpace(a.Device.Name))
+                {
+                    return;
+                }
+                if (a.Device.Name.StartsWith("Bluetooth"))
+                {
+                    return;
+                }
+                if (!_deviceDic.ContainsKey(a.Device.Id))
+                {
+                    _deviceDic.TryAdd(a.Device.Id, a.Device);
+                }
+                var address = GetDeviceAddress(a.Device);
+                if (UseableBluetooths.All(r => r.Address != address))
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        UseableBluetooths.Add(new BluetoothItem
+                        {
+                            Id = a.Device.Id,
+                            Name = a.Device.Name,
+                            Rssi = a.Device.Rssi,
+                            Address = address
+                        });
+                    });
+                }
             }
         }
 
@@ -316,7 +320,7 @@ namespace SensorConfiguration.ViewModel.Dialogs
                 {
                     if (!_deviceDic.ContainsKey(SelectedUseableBluetooth.Id))
                     {
-                        await new DialogService().DisplayAlertAsync("提示", "设备查找失败", "OK");
+                        new DialogService().DisplayAlert("提示", "设备查找失败", "OK");
                         return;
                     }
                     var selectDevice = _deviceDic[SelectedUseableBluetooth.Id];
@@ -325,14 +329,15 @@ namespace SensorConfiguration.ViewModel.Dialogs
                     if (!Adapter.ConnectedDevices.Any(r => r.Id == SelectedUseableBluetooth.Id))
                     {
                         new DialogService().HideLoadingModal();
-                        await new DialogService().DisplayAlertAsync("提示", "设备连接失败", "OK");
+                        new DialogService().DisplayAlert("提示", "设备连接失败", "OK");
                         return;
                     }
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    CancellationToken cancellationToken = _cancellationTokenSource.Token;
-                    await Task.Delay(10000, cancellationToken);
-                    DisconnectDeviceNative(selectDevice);
-                    await new DialogService().DisplayAlertAsync("提示", "登录超时已断连", "OK");
+
+                    //_cancellationTokenSource = new CancellationTokenSource();
+                    //CancellationToken cancellationToken = _cancellationTokenSource.Token;
+                    //await Task.Delay(10000, cancellationToken);
+                    //DisconnectDeviceNative(selectDevice);
+                    //new DialogService().DisplayAlert("提示", "登录超时已断连", "OK");
                     new DialogService().HideLoadingModal();
                 }
             }
@@ -342,7 +347,7 @@ namespace SensorConfiguration.ViewModel.Dialogs
             }
             catch (Exception e)
             {
-                await new DialogService().DisplayAlertAsync("提示", e.Message, "OK");
+                new DialogService().DisplayAlert("提示", e.Message, "OK");
                 new DialogService().HideLoadingModal();
             }
         }
@@ -355,43 +360,39 @@ namespace SensorConfiguration.ViewModel.Dialogs
 
             if (Adapter.ConnectedDevices.Any(r => r.Id == device.Id))
             {
-                await new DialogService().DisplayAlertAsync("提示", "设备断连失败", "OK");
+                new DialogService().DisplayAlert("提示", "设备断连失败", "OK");
             }
         }
 
-        public async void OnDeviceActionParing(object? obj, DeviceEventArgs args)
+        public void OnDeviceActionParing(object? sender, DevicePairingRequestedEventArgs args)
         {
-            if (_cancellationTokenSource != null)
-            {
-                _cancellationTokenSource.Cancel();
-            }
-            if (SelectedUseableBluetooth == null)
-            {
-                return;
-            }
-            if (!_deviceDic.ContainsKey(SelectedUseableBluetooth.Id))
-            {
-                new DialogService().HideLoadingModal();
-                await new DialogService().DisplayAlertAsync("提示", "设备查找失败", "OK");
-                return;
-            }
-            var selectDevice = _deviceDic[SelectedUseableBluetooth.Id];
-            var pin = PinHelper.GetBytePin(SelectedUseableBluetooth?.Address ?? "");
-            selectDevice.SetPin(pin);
+            //if (_cancellationTokenSource != null
+            //    && !_cancellationTokenSource.IsCancellationRequested)
+            //{
+            //    _cancellationTokenSource.Cancel();
+            //}
+            var pin = PinHelper.GetPin(SelectedUseableBluetooth?.Address ?? "");
+            args.Accept(pin);
         }
-        public async void OnDeviceBounded(object? obj, DeviceEventArgs args)
+
+        public void OnDeviceBounded(object? obj, DeviceEventArgs args)
         {
-            if (SelectedUseableBluetooth == null)
+            //if (_cancellationTokenSource != null
+            //    && !_cancellationTokenSource.IsCancellationRequested)
+            //{
+            //    _cancellationTokenSource.Cancel();
+            //}
+            if (args.Device == null)
             {
                 return;
             }
-            if (!_deviceDic.ContainsKey(SelectedUseableBluetooth.Id))
+            if (!_deviceDic.ContainsKey(args.Device.Id))
             {
                 new DialogService().HideLoadingModal();
-                await new DialogService().DisplayAlertAsync("提示", "设备查找失败", "OK");
+                new DialogService().DisplayAlert("提示", "设备查找失败", "OK");
                 return;
             }
-            var selectDevice = _deviceDic[SelectedUseableBluetooth.Id];
+            var selectDevice = _deviceDic[args.Device.Id];
             HandleLogin(selectDevice);
         }
         #endregion
@@ -446,12 +447,14 @@ namespace SensorConfiguration.ViewModel.Dialogs
         public async void HandleLogin(IDevice device)
         {
             var helper = BLEDeviceHelper.GetBLEDeviceHelper(device);
-            var password = (DefultPasswordFlag || NewDeviceFlag) ? Common.DefultPassword : await new DialogService().DisplayPromptAsync("登录", "输入密码", "确认", "取消");
+            var password = (DefultPasswordFlag || NewDeviceFlag) 
+                ? Common.DefultPassword 
+                : new HandyControl.Controls.PasswordBox().Password;
             if (string.IsNullOrWhiteSpace(password))
             {
                 new DialogService().HideLoadingModal();
                 DisconnectDeviceNative(device);
-                await new DialogService().DisplayAlertAsync("提示", "登录失败已断连", "OK");
+                new DialogService().DisplayAlert("提示", "登录失败已断连", "OK");
                 return;
             }
             helper.ValueUpdated += LoginCallback;
@@ -464,7 +467,7 @@ namespace SensorConfiguration.ViewModel.Dialogs
             {
                 new DialogService().HideLoadingModal();
                 DisconnectDeviceNative(device);
-                await new DialogService().DisplayAlertAsync("提示", "登录失败已断连", "OK");
+                new DialogService().DisplayAlert("提示", "登录失败已断连", "OK");
                 return;
             }
             TimeOutCancel(helper);
@@ -481,9 +484,9 @@ namespace SensorConfiguration.ViewModel.Dialogs
                 CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
                 CancellationToken cancellationToken = cancellationTokenSource.Token;
                 helper.CancellationTokenSource = cancellationTokenSource;
-                await Task.Delay(10000, cancellationToken);
+                await Task.Delay(30000, cancellationToken);
                 DisconnectDeviceNative(helper.GetDevice());
-                await new DialogService().DisplayAlertAsync("提示", "登录超时已断连", "OK");
+                new DialogService().DisplayAlert("提示", "登录超时已断连", "OK");
                 new DialogService().HideLoadingModal();
                 return;
             }
@@ -516,7 +519,7 @@ namespace SensorConfiguration.ViewModel.Dialogs
                     if (helper == null)
                     {
                         DisconnectDeviceNative(helper.GetDevice());
-                        await new DialogService().DisplayAlertAsync("提示", "登录失败已断连", "OK");
+                        new DialogService().DisplayAlert("提示", "登录失败已断连", "OK");
                         new DialogService().HideLoadingModal();
                         return;
                     }
@@ -529,7 +532,7 @@ namespace SensorConfiguration.ViewModel.Dialogs
                     if (!re)
                     {
                         DisconnectDeviceNative(helper.GetDevice());
-                        await new DialogService().DisplayAlertAsync("提示", "登录失败已断连", "OK");
+                        new DialogService().DisplayAlert("提示", "登录失败已断连", "OK");
                         new DialogService().HideLoadingModal();
                         return;
                     }
@@ -574,7 +577,7 @@ namespace SensorConfiguration.ViewModel.Dialogs
             }
             catch (Exception e)
             {
-                await new DialogService().DisplayAlertAsync("提示", e.Message, "OK");
+                new DialogService().DisplayAlert("提示", e.Message, "OK");
                 new DialogService().HideLoadingModal();
             }
         }
@@ -588,8 +591,10 @@ namespace SensorConfiguration.ViewModel.Dialogs
             //初始化蓝牙
             Ble = CrossBluetoothLE.Current;
             Adapter = CrossBluetoothLE.Current.Adapter;
+            Adapter.DeviceDiscovered += DeviceDiscoveredHandle;
             Adapter.DeviceActionParing += OnDeviceActionParing;
             Adapter.DeviceBounded += OnDeviceBounded;
+            
             //初始化扫描指令
             StartScanCommand = new RelayCommand(StartScan);
             //初始化连接指令

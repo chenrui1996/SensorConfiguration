@@ -1,4 +1,6 @@
-﻿using SensorConfiguration.Models;
+﻿using HandyControl.Controls;
+using HandyControl.Tools.Extension;
+using SensorConfiguration.Models;
 using SensorConfiguration.Views.Dialogs;
 using System;
 using System.Collections.Generic;
@@ -14,14 +16,14 @@ namespace SensorConfiguration.Services
         {
             await Task.Run(() =>
             {
-                return "";
+                PopupWindow.ShowDialog(message, title, true);
             });
-            //await Application.Current.MainPage.DisplayAlert(title, message, cancel);
+
         }
 
         public void DisplayAlert(string title, string message, string cancel)
         {
-           //Application.Current.MainPage.DisplayAlert(title, message, cancel);
+            PopupWindow.ShowDialog(message, title, true);
         }
 
         public async Task<string> DisplayPromptAsync(string title, string message, string accept, string cancel)
@@ -249,6 +251,7 @@ namespace SensorConfiguration.Services
         public void ShowScanDialog()
         {
             ScanDialog modalDialog = new ScanDialog();
+            //new PopupWindow().Show(modalDialog, true);
             modalDialog.ShowDialog();
         }
     }

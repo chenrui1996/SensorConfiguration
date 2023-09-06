@@ -91,7 +91,7 @@ namespace SensorConfiguration.Helper.BLE
         public byte[] ParseMacAddress(string macAddress)
         {
             // Remove colon separators and convert to byte array
-            macAddress = macAddress.Replace(":", string.Empty);
+            macAddress = macAddress.Replace("-", string.Empty);
             byte[] macBytes = new byte[macAddress.Length / 2];
             for (int i = 0; i < macBytes.Length; i++)
             {

@@ -8,6 +8,7 @@ using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
 using Plugin.BLE.Abstractions.Exceptions;
 using Plugin.BLE.Abstractions.Utils;
+using Windows.Devices.Enumeration;
 
 namespace Plugin.BLE.Abstractions
 {
@@ -16,43 +17,43 @@ namespace Plugin.BLE.Abstractions
     /// </summary>
     public abstract class AdapterBase : IAdapter
     {
-        private CancellationTokenSource _scanCancellationTokenSource;
+        private CancellationTokenSource? _scanCancellationTokenSource;
         private volatile bool _isScanning;
-        private Func<IDevice, bool> _currentScanDeviceFilter;
+        private Func<IDevice, bool>? _currentScanDeviceFilter;
 
         /// <summary>
         /// Occurs when the adapter receives an advertisement.
         /// </summary>
-        public event EventHandler<DeviceEventArgs> DeviceAdvertised;
+        public event EventHandler<DeviceEventArgs>? DeviceAdvertised;
         /// <summary>
         /// Occurs when the adapter receives an advertisement for the first time of the current scan run.
         /// This means once per every <c>StartScanningForDevicesAsync</c> call.
         /// </summary>
-        public event EventHandler<DeviceEventArgs> DeviceDiscovered;
+        public event EventHandler<DeviceEventArgs>? DeviceDiscovered;
         /// <summary>
         /// Occurs when a device has been connected.
         /// </summary>
-        public event EventHandler<DeviceEventArgs> DeviceConnected;
+        public event EventHandler<DeviceEventArgs>? DeviceConnected;
         /// <summary>
         /// Occurs when a device has been disconnected. This occurs on intended disconnects after <see cref="DisconnectDeviceAsync"/>.
         /// </summary>
-        public event EventHandler<DeviceEventArgs> DeviceDisconnected;
+        public event EventHandler<DeviceEventArgs>? DeviceDisconnected;
         /// <summary>
         /// Occurs when a device has been disconnected. This occurs on unintended disconnects (e.g. when the device exploded).
         /// </summary>
-        public event EventHandler<DeviceErrorEventArgs> DeviceConnectionLost;
+        public event EventHandler<DeviceErrorEventArgs>? DeviceConnectionLost;
         /// <summary>
         /// Occurs when the connection to a device fails.
         /// </summary>
-        public event EventHandler<DeviceErrorEventArgs> DeviceConnectionError;
+        public event EventHandler<DeviceErrorEventArgs>? DeviceConnectionError;
         /// <summary>
         /// Occurs when the scan has been stopped due the timeout after <see cref="ScanTimeout"/> ms.
         /// </summary>
-        public event EventHandler ScanTimeoutElapsed;
+        public event EventHandler? ScanTimeoutElapsed;
 
-        public event EventHandler<DeviceEventArgs> DeviceActionParing;
+        public event EventHandler<DevicePairingRequestedEventArgs>? DeviceActionParing;
 
-        public event EventHandler<DeviceEventArgs> DeviceBounded;
+        public event EventHandler<DeviceEventArgs>? DeviceBounded;
 
 
         /// <summary>
@@ -115,7 +116,7 @@ namespace Plugin.BLE.Abstractions
         /// DeviceDiscovered will only be called, if <paramref name="deviceFilter"/> returns <c>true</c> for the discovered device.
         /// </summary>
         public async Task StartScanningForDevicesAsync(ScanFilterOptions scanFilterOptions,
-            Func<IDevice, bool> deviceFilter = null,
+            Func<IDevice, bool>? deviceFilter = null,
             bool allowDuplicatesKey = false,
             CancellationToken cancellationToken = default)
         {
@@ -136,10 +137,10 @@ namespace Plugin.BLE.Abstractions
                 using (cancellationToken.Register(() => _scanCancellationTokenSource?.Cancel()))
                 {
                     await StartScanningForDevicesNativeAsync(scanFilterOptions, allowDuplicatesKey, _scanCancellationTokenSource.Token);
-                    await Task.Delay(ScanTimeout, _scanCancellationTokenSource.Token);
-                    Trace.Message("Adapter: Scan timeout has elapsed.");
-                    CleanupScan();
-                    ScanTimeoutElapsed?.Invoke(this, new System.EventArgs());
+                    //await Task.Delay(ScanTimeout, _scanCancellationTokenSource.Token);
+                    //Trace.Message("Adapter: Scan timeout has elapsed.");
+                    //CleanupScan();
+                    //ScanTimeoutElapsed?.Invoke(this, new System.EventArgs());
                 }
             }
             catch (TaskCanceledException)
@@ -165,15 +166,15 @@ namespace Plugin.BLE.Abstractions
         /// </summary>
         public Task StopScanningForDevicesAsync()
         {
-            if (_scanCancellationTokenSource != null && !_scanCancellationTokenSource.IsCancellationRequested)
-            {
-                _scanCancellationTokenSource.Cancel();
-            }
-            else
-            {
-                Trace.Message("Adapter: Already cancelled scan.");
-            }
-
+            //if (_scanCancellationTokenSource != null && !_scanCancellationTokenSource.IsCancellationRequested)
+            //{
+            //    _scanCancellationTokenSource.Cancel();
+            //}
+            //else
+            //{
+            //    Trace.Message("Adapter: Already cancelled scan.");
+            //}
+            CleanupScan();
             return Task.FromResult(0);
         }
 
@@ -270,11 +271,11 @@ namespace Plugin.BLE.Abstractions
             Trace.Message("Adapter: Stopping the scan for devices.");
             StopScanNative();
 
-            if (_scanCancellationTokenSource != null)
-            {
-                _scanCancellationTokenSource.Dispose();
-                _scanCancellationTokenSource = null;
-            }
+            //if (_scanCancellationTokenSource != null)
+            //{
+            //    _scanCancellationTokenSource.Dispose();
+            //    _scanCancellationTokenSource = null;
+            //}
 
             IsScanning = false;
         }
@@ -308,9 +309,9 @@ namespace Plugin.BLE.Abstractions
         /// <summary>
         /// Handle connection of a new device.
         /// </summary>
-        public void HandleDeviceParing(IDevice device)
+        public void HandleDeviceParing(DeviceInformationCustomPairing sender, DevicePairingRequestedEventArgs args)
         {
-            DeviceActionParing?.Invoke(this, new DeviceEventArgs { Device = device });
+            DeviceActionParing?.Invoke(sender, args);
         }
 
         /// <summary>

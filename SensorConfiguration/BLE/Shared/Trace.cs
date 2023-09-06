@@ -10,7 +10,7 @@ namespace Plugin.BLE.Abstractions
         /// <summary>
         /// The actual tracing implementation.
         /// </summary>
-        public static Action<string, object[]> TraceImplementation { get; set; }
+        public static Action<string, object[]>? TraceImplementation { get; set; }
 
         /// <summary>
         /// Print a message via the tracing implementation.

@@ -41,9 +41,9 @@ namespace SensorConfiguration.Views.Dialogs
 
         protected override void OnClosed(EventArgs e)
         {
-            base.OnClosed(e);
             var scanViewModel = DataContext as ScanViewModel;
             scanViewModel?.StopScan();
+            base.OnClosed(e);
         }
     }
 }

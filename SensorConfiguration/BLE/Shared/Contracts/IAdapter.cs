@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Plugin.BLE.Abstractions.EventArgs;
 using Plugin.BLE.Abstractions.Exceptions;
+using Windows.Devices.Enumeration;
 
 namespace Plugin.BLE.Abstractions.Contracts
 {
@@ -45,7 +46,7 @@ namespace Plugin.BLE.Abstractions.Contracts
         /// <summary>
         /// DeviceActionParing.
         /// </summary>
-        event EventHandler<DeviceEventArgs> DeviceActionParing;
+        event EventHandler<DevicePairingRequestedEventArgs> DeviceActionParing;
 
         /// <summary>
         /// DeviceBounded.

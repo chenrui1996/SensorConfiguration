@@ -13,19 +13,30 @@ using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Extensions;
 using Microsoft.Toolkit.Uwp.Connectivity;
 using Windows.System;
+using Windows.Devices.Enumeration;
 
 namespace Plugin.BLE.UWP
 {
     public class Adapter : AdapterBase
     {
-        private BluetoothLEHelper _bluetoothHelper;
+        private BluetoothLEHelper? _bluetoothHelper;
         private BluetoothLEAdvertisementWatcher _bleWatcher;
         private DispatcherQueue _dq;
+        public Adapter()
+        {
+            Trace.Message("Starting Adapter.");
+            _dq = DispatcherQueue.GetForCurrentThread();
+            _bleWatcher = new BluetoothLEAdvertisementWatcher();
+            //_bleWatcher.Received += DeviceFoundAsync;
+        }
 
         public Adapter(BluetoothLEHelper bluetoothHelper)
         {
+            Trace.Message("Starting Adapter.");
             _bluetoothHelper = bluetoothHelper;
             _dq = DispatcherQueue.GetForCurrentThread();
+            _bleWatcher = new BluetoothLEAdvertisementWatcher();
+            //_bleWatcher.Received += DeviceFoundAsync;
         }
 
         protected override Task StartScanningForDevicesNativeAsync(ScanFilterOptions scanFilterOptions, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
@@ -33,10 +44,12 @@ namespace Plugin.BLE.UWP
             var serviceUuids = scanFilterOptions?.ServiceUuids;
             var hasFilter = serviceUuids?.Any() ?? false;
 
-            _bleWatcher = new BluetoothLEAdvertisementWatcher { ScanningMode = ScanMode.ToNative() };
-
+            //_bleWatcher = new BluetoothLEAdvertisementWatcher 
+            //{
+            //    ScanningMode = ScanMode.ToNative() 
+            //};
             Trace.Message("Starting a scan for devices.");
-            if (hasFilter)
+            if (hasFilter && serviceUuids != null)
             {
                 //adds filter to native scanner if serviceUuids are specified
                 foreach (var uuid in serviceUuids)
@@ -46,27 +59,27 @@ namespace Plugin.BLE.UWP
 
                 Trace.Message($"ScanFilters: {string.Join(", ", serviceUuids)}");
             }
-
-            _bleWatcher.Received -= DeviceFoundAsync;
             _bleWatcher.Received += DeviceFoundAsync;
-
             _bleWatcher.Start();
+            Trace.Message("Started the scan for devices");
             return Task.FromResult(true);
         }
 
         protected override void StopScanNative()
         {
-            if (_bleWatcher != null)
+            Trace.Message($"BleWatcher Status {0}", _bleWatcher.Status.ToString());
+            if (_bleWatcher != null && _bleWatcher.Status == BluetoothLEAdvertisementWatcherStatus.Started)
             {
                 Trace.Message("Stopping the scan for devices");
+                _bleWatcher.Received -= DeviceFoundAsync;
                 _bleWatcher.Stop();
-                _bleWatcher = null;
+                Trace.Message("Stopped the scan for devices");
             }
         }
 
         protected override async Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
-            Trace.Message($"Connecting to device with ID:  {device.Id.ToString()}");
+            Trace.Message($"Connecting to device with ID:  {device.Id}");
 
             if (!(device.NativeDevice is ObservableBluetoothLEDevice nativeDevice))
                 return;
@@ -76,11 +89,32 @@ namespace Plugin.BLE.UWP
 
             ConnectedDeviceRegistry[device.Id.ToString()] = device;
 
+            // 配对设置
+            DeviceInformationCustomPairing pairing = nativeDevice.DeviceInfo.Pairing.Custom;
+
+            // 配置自定义配对
+            pairing.PairingRequested -= Device_PairingRequested;
+            pairing.PairingRequested += Device_PairingRequested;
+
+            var result = await nativeDevice.DeviceInfo.Pairing.Custom.PairAsync(DevicePairingKinds.ProvidePin);
+            if (result.Status != DevicePairingResultStatus.Paired &&
+                result.Status != DevicePairingResultStatus.AlreadyPaired)
+            {
+                throw new Exception(result.Status.ToString());
+            }
+
             await nativeDevice.ConnectAsync();
+
+            HandleBounddDevice(device, DeviceBondState.Bonded);
+
         }
 
-        private void Device_ConnectionStatusChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        private void Device_ConnectionStatusChanged(object? sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
+            if (sender == null)
+            {
+                return;
+            }
             if (!(sender is ObservableBluetoothLEDevice nativeDevice) || nativeDevice.BluetoothLEDevice == null)
             {
                 return;
@@ -104,6 +138,11 @@ namespace Plugin.BLE.UWP
             }
         }
 
+        private void Device_PairingRequested(DeviceInformationCustomPairing sender, DevicePairingRequestedEventArgs args)
+        {
+            HandleDeviceParing(sender, args);
+        }
+
         protected override void DisconnectDeviceNative(IDevice device)
         {
             // Windows doesn't support disconnecting, so currently just dispose of the device
@@ -112,7 +151,7 @@ namespace Plugin.BLE.UWP
             if (device.NativeDevice is ObservableBluetoothLEDevice)
             {
                 ((Device)device).ClearServices();
-                device.Dispose();                
+                device.Dispose();
             }
         }
 
@@ -155,6 +194,13 @@ namespace Plugin.BLE.UWP
         /// <param name="btAdv">The advertisement recieved by the watcher</param>
         private async void DeviceFoundAsync(BluetoothLEAdvertisementWatcher watcher, BluetoothLEAdvertisementReceivedEventArgs btAdv)
         {
+            if (string.IsNullOrWhiteSpace(btAdv.Advertisement.LocalName))
+            {
+                //筛选不符合条件的广播
+                //以免Start Stop时阻塞等待时间结束导致线程卡死
+                //2023.09.05
+                return;
+            }
             var deviceId = ParseDeviceId(btAdv.BluetoothAddress);
 
             if (DiscoveredDevicesRegistry.TryGetValue(deviceId, out var device))
@@ -165,6 +211,10 @@ namespace Plugin.BLE.UWP
             }
             else
             {
+                //Trace.Message(string.Format("DiscoveredPeripheral: {0} Id: {1}, Rssi: {2}", btAdv.Advertisement.LocalName, btAdv.BluetoothAddress, btAdv.RawSignalStrengthInDBm));
+                //device = new Device(this, bluetoothLeDevice, btAdv.RawSignalStrengthInDBm, deviceId, _dq, ParseAdvertisementData(btAdv.Advertisement), btAdv.IsConnectable);
+                //Trace.Message("DiscoveredPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
+                //this.HandleDiscoveredDevice(device);
                 var bluetoothLeDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(btAdv.BluetoothAddress);
                 if (bluetoothLeDevice != null) //make sure advertisement bluetooth address actually returns a device
                 {

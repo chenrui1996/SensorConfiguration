@@ -175,7 +175,7 @@ namespace SensorConfiguration.Helper.BLE
             }
             catch (Exception e)
             {
-                await new DialogService().DisplayAlertAsync("提示", e.Message, "OK");
+                new DialogService().DisplayAlert("提示", e.Message, "OK");
                 return false;
             }
             

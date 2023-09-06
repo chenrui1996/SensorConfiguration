@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Plugin.BLE.Abstractions;
+using Plugin.BLE.UWP;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -39,10 +41,10 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
             /// <param name="x">First object to compare</param>
             /// <param name="y">Second object to compare</param>
             /// <returns>Returns 0 if equal</returns>
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
-                ObservableBluetoothLEDevice a = x as ObservableBluetoothLEDevice;
-                ObservableBluetoothLEDevice b = y as ObservableBluetoothLEDevice;
+                ObservableBluetoothLEDevice? a = x as ObservableBluetoothLEDevice;
+                ObservableBluetoothLEDevice? b = y as ObservableBluetoothLEDevice;
 
                 if (a == null || b == null)
                 {
@@ -75,22 +77,22 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <summary>
         /// Source for <see cref="BluetoothLEDevice" />
         /// </summary>
-        private BluetoothLEDevice _bluetoothLeDevice;
+        private BluetoothLEDevice? _bluetoothLeDevice;
 
         /// <summary>
         /// Source for <see cref="DeviceInfo" />
         /// </summary>
-        private DeviceInformation _deviceInfo;
+        private DeviceInformation? _deviceInfo;
 
         /// <summary>
         /// Source for <see cref="ErrorText" />
         /// </summary>
-        private string _errorText;
+        private string? _errorText;
 
         /// <summary>
         /// Source for <see cref="Glyph" />
         /// </summary>
-        private BitmapImage _glyph;
+        private BitmapImage? _glyph;
 
         /// <summary>
         /// Source for <see cref="IsConnected" />
@@ -105,12 +107,12 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <summary>
         /// Source for <see cref="Name" />
         /// </summary>
-        private string _name;
+        private string? _name;
 
         /// <summary>
         /// result of finding all the services
         /// </summary>
-        private GattDeviceServicesResult _result;
+        private GattDeviceServicesResult? _result;
 
         /// <summary>
         /// Queue to store the last 10 observed RSSI values
@@ -136,21 +138,26 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <summary>
         /// Gets or sets which DispatcherQueue is used to dispatch UI updates.
         /// </summary>
-        public DispatcherQueue DispatcherQueue { get; set; }
+        public DispatcherQueue? DispatcherQueue { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObservableBluetoothLEDevice"/> class.
         /// </summary>
         /// <param name="deviceInfo">The device information.</param>
         /// <param name="dispatcherQueue">The DispatcherQueue that should be used to dispatch UI updates for this BluetoothLE Device, or null if this is being called from the UI thread.</param>
-        public ObservableBluetoothLEDevice(DeviceInformation deviceInfo, DispatcherQueue dispatcherQueue = null)
+        public ObservableBluetoothLEDevice(DeviceInformation deviceInfo, DispatcherQueue? dispatcherQueue = null)
         {
+            if (deviceInfo == null)
+            {
+                return;
+            }
             DeviceInfo = deviceInfo;
             Name = DeviceInfo.Name;
 
             IsPaired = DeviceInfo.Pairing.IsPaired;
 
-            DispatcherQueue = dispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
+            DispatcherQueue = dispatcherQueue ??
+                DispatcherQueueController.CreateOnDedicatedThread().DispatcherQueue;
 
             LoadGlyph();
 
@@ -384,8 +391,12 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
             return other?.DeviceInfo.Id != null && DeviceInfo.Id == other.DeviceInfo.Id;
         }
 
-        private void ObservableBluetoothLEDevice_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void ObservableBluetoothLEDevice_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (sender == null)
+            {
+                return;
+            }
             if (e.PropertyName == "DeviceInfo")
             {
                 if (DeviceInfo.Properties.ContainsKey("System.Devices.Aep.SignalStrength") && DeviceInfo.Properties["System.Devices.Aep.SignalStrength"] != null)
@@ -402,59 +413,62 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <exception cref="Exception">Throws Exception when no permission to access device</exception>
         public async Task ConnectAsync()
         {
-            DispatcherQueue.TryEnqueue(
-            async () =>
-            {
-                if (BluetoothLEDevice == null)
-                {
-                    var ret = Task.Run(async () =>
-                    {
-                        return await BluetoothLEDevice.FromIdAsync(DeviceInfo.Id);
-                    });
-                    BluetoothLEDevice = ret.Result;
-
+            //await Task.Run(() =>
+            //{
+                //DispatcherQueue?.TryEnqueue(() =>
+                //{
                     if (BluetoothLEDevice == null)
                     {
-                        throw new Exception("Connection error, no permission to access device");
+                        var ret = Task.Run(async () =>
+                        {
+                            return await BluetoothLEDevice.FromIdAsync(DeviceInfo.Id);
+                        });
+                        BluetoothLEDevice = ret.Result;
+
+                        if (BluetoothLEDevice == null)
+                        {
+                            throw new Exception("Connection error, no permission to access device");
+                        }
                     }
-                }
 
-                BluetoothLEDevice.ConnectionStatusChanged += BluetoothLEDevice_ConnectionStatusChanged;
-                BluetoothLEDevice.NameChanged += BluetoothLEDevice_NameChanged;
+                    BluetoothLEDevice.ConnectionStatusChanged += BluetoothLEDevice_ConnectionStatusChanged;
+                    BluetoothLEDevice.NameChanged += BluetoothLEDevice_NameChanged;
 
-                IsPaired = DeviceInfo.Pairing.IsPaired;
-                IsConnected = BluetoothLEDevice.ConnectionStatus == BluetoothConnectionStatus.Connected;
-                Name = BluetoothLEDevice.Name;
+                    IsPaired = DeviceInfo.Pairing.IsPaired;
+                    IsConnected = BluetoothLEDevice.ConnectionStatus == BluetoothConnectionStatus.Connected;
+                    Name = BluetoothLEDevice.Name;
 
-                // Get all the services for this device
-                var getGattServicesAsyncTokenSource = new CancellationTokenSource(5000);
-                var getGattServicesAsyncTask = await
-                    Task.Run(
-                        () => BluetoothLEDevice.GetGattServicesAsync(BluetoothCacheMode.Uncached),
-                        getGattServicesAsyncTokenSource.Token);
+                    // Get all the services for this device
+                    var getGattServicesAsyncTokenSource = new CancellationTokenSource(5000);
+                    var getGattServicesAsyncTask = await
+                        Task.Run(
+                            () => BluetoothLEDevice.GetGattServicesAsync(BluetoothCacheMode.Uncached),
+                            getGattServicesAsyncTokenSource.Token);
 
-                _result = await getGattServicesAsyncTask;
+                    _result = await getGattServicesAsyncTask;
 
-                if (_result.Status == GattCommunicationStatus.Success)
-                {
-                    // In case we connected before, clear the service list and recreate it
-                    Services.Clear();
-
-                    foreach (var service in _result.Services)
+                    if (_result.Status == GattCommunicationStatus.Success)
                     {
-                        Services.Add(new ObservableGattDeviceService(service));
-                    }
+                        // In case we connected before, clear the service list and recreate it
+                        Services.Clear();
 
-                    ServiceCount = Services.Count;
-                }
-                else
-                {
-                    if (_result.ProtocolError != null)
-                    {
-                        throw new Exception(_result.ProtocolError.GetErrorString());
+                        foreach (var service in _result.Services)
+                        {
+                            Services.Add(new ObservableGattDeviceService(service));
+                        }
+
+                        ServiceCount = Services.Count;
                     }
-                }
-            });
+                    else
+                    {
+                        if (_result.ProtocolError != null)
+                        {
+                            throw new Exception(_result.ProtocolError.GetErrorString());
+                        }
+                    }
+                //});
+            //});
+
         }
 
         /// <summary>
@@ -480,8 +494,9 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <returns>The task of the update.</returns>
         public async Task UpdateAsync(DeviceInformationUpdate deviceUpdate)
         {
-            DispatcherQueue.TryEnqueue(
-                () =>
+            await Task.Run(() =>
+            {
+                DispatcherQueue?.TryEnqueue(() =>
                 {
                     DeviceInfo.Update(deviceUpdate);
                     Name = DeviceInfo.Name;
@@ -491,6 +506,8 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
                     LoadGlyph();
                     OnPropertyChanged("DeviceInfo");
                 });
+            });
+            
         }
 
         /// <summary>
@@ -505,7 +522,7 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <summary>
         /// Event to notify when this object has changed
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
         /// Property changed event invoker
@@ -523,7 +540,14 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <param name="args">The arguments.</param>
         private async void BluetoothLEDevice_NameChanged(BluetoothLEDevice sender, object args)
         {
-            DispatcherQueue.TryEnqueue(() => { Name = BluetoothLEDevice.Name; });
+            await Task.Run(() =>
+            {
+                DispatcherQueue?.TryEnqueue(() =>
+                {
+                    Name = BluetoothLEDevice.Name;
+                });
+            });
+            
         }
 
         /// <summary>
@@ -533,12 +557,14 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <param name="args">The arguments.</param>
         private async void BluetoothLEDevice_ConnectionStatusChanged(BluetoothLEDevice sender, object args)
         {
-             DispatcherQueue.TryEnqueue(
-                () =>
+            await Task.Run(() =>
+            {
+                DispatcherQueue?.TryEnqueue(() =>
                 {
                     IsPaired = DeviceInfo.Pairing.IsPaired;
                     IsConnected = BluetoothLEDevice.ConnectionStatus == BluetoothConnectionStatus.Connected;
                 });
+            });
         }
 
         /// <summary>
@@ -546,12 +572,16 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// </summary>
         private async void LoadGlyph()
         {
+            await Task.Run(() =>
+            { 
+
+            });
             //DispatcherQueue.TryEnqueue(
             //    async () =>
             //    {
             //        var deviceThumbnail = await DeviceInfo.GetGlyphThumbnailAsync();
             //        var glyphBitmapImage = new BitmapImage();
-            //        await glyphBitmapImage.S(deviceThumbnail);
+            //        await glyphBitmapImage.(deviceThumbnail);
             //        Glyph = glyphBitmapImage;
             //    });
         }

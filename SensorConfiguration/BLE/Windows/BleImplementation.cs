@@ -14,11 +14,12 @@ namespace Plugin.BLE
         public static BluetoothCacheMode CacheModeGetCharacteristics { get; set; } = BluetoothCacheMode.Cached;
         public static BluetoothCacheMode CacheModeGetServices { get; set; } = BluetoothCacheMode.Cached;
 
-        private BluetoothLEHelper _bluetoothHelper;
+        private BluetoothLEHelper? _bluetoothHelper;
 
         protected override IAdapter CreateNativeAdapter()
         {
-            return new Adapter(_bluetoothHelper);
+            //return new Adapter(_bluetoothHelper);
+            return new Adapter();
         }
 
         protected override BluetoothState GetInitialStateNative()
@@ -27,18 +28,19 @@ namespace Plugin.BLE
             //getting the radios for a device. This operation is asynchronous
             //and thus cannot be called in this method. Thus, we are just
             //returning "On" as long as the BluetoothLEHelper is initialized
-            if (_bluetoothHelper == null)
-            {
-                return BluetoothState.Unavailable;
-            }
+            //if (_bluetoothHelper == null)
+            //{
+            //    return BluetoothState.Unavailable;
+            //}
             return BluetoothState.On;
         }
 
         protected override void InitializeNative()
         {
             //create local helper using the app context
-            var localHelper = BluetoothLEHelper.Context;
-            _bluetoothHelper = localHelper;
+            //var localHelper = BluetoothLEHelper.Context;
+            //_bluetoothHelper = localHelper;
+            _bluetoothHelper = null;
         }
     }
 

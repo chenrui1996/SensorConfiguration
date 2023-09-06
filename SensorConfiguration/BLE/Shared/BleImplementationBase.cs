@@ -16,7 +16,7 @@ namespace Plugin.BLE.Abstractions
         /// <summary>
         /// Occurs when the state of the Bluetooth adapter changes.
         /// </summary>
-        public event EventHandler<BluetoothStateChangedArgs> StateChanged;
+        public event EventHandler<BluetoothStateChangedArgs>? StateChanged;
 
         /// <summary>
         /// Indicates whether the device supports BLE.
@@ -69,9 +69,6 @@ namespace Plugin.BLE.Abstractions
 
         private IAdapter CreateAdapter()
         {
-            if (!IsAvailable)
-                return new FakeAdapter();
-
             return CreateNativeAdapter();
         }
 

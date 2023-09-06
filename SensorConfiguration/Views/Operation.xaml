@@ -31,7 +31,7 @@
                 Width="254" 
                 Height="42"
                 Style="{StaticResource ButtonPrimary}"
-                Background="#3f3f41"
+                Background="#FF326CF3"
                 BorderBrush="DarkGray">
             </Button>
             <ListBox Grid.Row="1"

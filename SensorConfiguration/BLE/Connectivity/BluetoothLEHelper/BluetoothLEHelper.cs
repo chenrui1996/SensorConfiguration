@@ -40,17 +40,17 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <summary>
         /// Advertisement watcher used to find bluetooth devices.
         /// </summary>
-        private BluetoothLEAdvertisementWatcher _advertisementWatcher;
+        private BluetoothLEAdvertisementWatcher? _advertisementWatcher;
 
         /// <summary>
         /// Device watcher used to find bluetooth devices
         /// </summary>
-        private DeviceWatcher _deviceWatcher;
+        private DeviceWatcher? _deviceWatcher;
 
         /// <summary>
         /// The Bluetooth adapter.
         /// </summary>
-        private BluetoothAdapter _adapter;
+        private BluetoothAdapter? _adapter;
 
         /// <summary>
         /// Gets or sets which DispatcherQueue is used to dispatch UI updates.
@@ -61,7 +61,7 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// Prevents a default instance of the <see cref="BluetoothLEHelper" /> class from being created.
         /// </summary>
         /// <param name="dispatcherQueue">The DispatcherQueue that should be used to dispatch UI updates, or null if this is being called from the UI thread.</param>
-        private BluetoothLEHelper(DispatcherQueue dispatcherQueue = null)
+        private BluetoothLEHelper(DispatcherQueue? dispatcherQueue = null)
         {
             DispatcherQueue = dispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
 
@@ -109,7 +109,7 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <summary>
         /// An event for when the enumeration is complete.
         /// </summary>
-        public event EventHandler<EventArgs> EnumerationCompleted;
+        public event EventHandler<EventArgs>? EnumerationCompleted;
 
         /// <summary>
         /// Starts enumeration of bluetooth device
@@ -196,7 +196,9 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <param name="args">The advertisement.</param>
         private async void AdvertisementWatcher_Received(BluetoothLEAdvertisementWatcher sender, BluetoothLEAdvertisementReceivedEventArgs args)
         {
-            DispatcherQueue.TryEnqueue(
+            await Task.Run(() =>
+            {
+                DispatcherQueue.TryEnqueue(
                 () =>
                 {
                     if (_readerWriterLockSlim.TryEnterReadLock(TimeSpan.FromSeconds(1)))
@@ -212,6 +214,7 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
                         _readerWriterLockSlim.ExitReadLock();
                     }
                 });
+            });
         }
 
         /// <summary>
@@ -318,6 +321,10 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <returns>The task being used to add a device to a list</returns>
         private async Task AddDeviceToList(DeviceInformation deviceInfo)
         {
+            if (deviceInfo == null)
+            {
+                return;
+            }
             // Make sure device name isn't blank or already present in the list.
             if (!string.IsNullOrEmpty(deviceInfo?.Name))
             {
@@ -329,20 +336,22 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
 
                 if (connectable)
                 {
-                    DispatcherQueue.TryEnqueue(
+                    await Task.Run(() =>
+                    {
+                        DispatcherQueue.TryEnqueue(
                         () =>
-                        {
-                            if (_readerWriterLockSlim.TryEnterWriteLock(TimeSpan.FromSeconds(1)))
-                            {
-                                if (!BluetoothLeDevices.Contains(device))
-                                {
-                                    BluetoothLeDevices.Add(device);
-                                }
+                         {
+                             if (_readerWriterLockSlim.TryEnterWriteLock(TimeSpan.FromSeconds(1)))
+                             {
+                                 if (!BluetoothLeDevices.Contains(device))
+                                 {
+                                     BluetoothLeDevices.Add(device);
+                                 }
 
-                                _readerWriterLockSlim.ExitWriteLock();
-                            }
-                        });
-
+                                 _readerWriterLockSlim.ExitWriteLock();
+                             }
+                         });
+                    });
                     return;
                 }
             }
