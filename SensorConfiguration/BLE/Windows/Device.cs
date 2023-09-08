@@ -78,7 +78,7 @@ namespace Plugin.BLE.UWP
 
         protected override async Task<IService> GetServiceNativeAsync(Guid id)
         {
-            var result = await NativeDevice.BluetoothLEDevice.GetGattServicesForUuidAsync(id, BleImplementation.CacheModeGetServices);
+            var result = await NativeDevice?.BluetoothLEDevice?.GetGattServicesForUuidAsync(id, BleImplementation.CacheModeGetServices);
             result.ThrowIfError();
 
             var nativeService = result.Services?.FirstOrDefault();
@@ -87,7 +87,7 @@ namespace Plugin.BLE.UWP
 
         protected override DeviceState GetState()
         {
-            if (NativeDevice.IsConnected)
+            if (NativeDevice?.IsConnected ?? false)
             {
                 return DeviceState.Connected;
             }

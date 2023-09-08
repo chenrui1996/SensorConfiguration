@@ -69,7 +69,7 @@ namespace Plugin.BLE.Abstractions
         /// <summary>
         /// Advertised Name of the Device.
         /// </summary>
-        public string Name { get; protected set; }
+        public string? Name { get; protected set; }
         /// <summary>
         /// Last known rssi value in decibals.
         /// Can be updated via <see cref="UpdateRssiAsync()"/>.
@@ -82,7 +82,7 @@ namespace Plugin.BLE.Abstractions
         /// <summary>
         /// All the advertisment records.
         /// </summary>
-        public IReadOnlyList<AdvertisementRecord> AdvertisementRecords { get; protected set; }
+        public IReadOnlyList<AdvertisementRecord>? AdvertisementRecords { get; protected set; }
         /// <summary>
         /// The native device.
         /// </summary>
@@ -226,7 +226,7 @@ namespace Plugin.BLE.Abstractions
         /// Equality operator for comparison with other devices.
         /// Checks for equality of the <c>Id</c>.
         /// </summary>
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
             if (other == null)
             {

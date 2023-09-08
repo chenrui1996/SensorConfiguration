@@ -6,6 +6,7 @@
       xmlns:local="clr-namespace:SensorConfiguration.Views"
       mc:Ignorable="d" 
       d:DesignHeight="600" d:DesignWidth="900"
+      Background="White"
       Title="Setting">
 
     <Grid>

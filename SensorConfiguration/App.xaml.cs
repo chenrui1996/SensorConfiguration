@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SensorConfiguration.SharedData;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -18,5 +19,6 @@ namespace SensorConfiguration
         public static log4net.ILog InfoLog = log4net.LogManager.GetLogger("InfoLog");
         public static log4net.ILog ErrorLog = log4net.LogManager.GetLogger("ErrorLog");
 
+        public LoggedDevices LoggedDevices = new LoggedDevices();
     }
 }

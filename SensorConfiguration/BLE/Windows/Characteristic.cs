@@ -19,12 +19,12 @@ namespace Plugin.BLE.UWP
         /// Value of the characteristic to be stored locally after
         /// update notification or read
         /// </summary>
-        private byte[] _value;
+        private byte[]? _value;
         public override Guid Id => NativeCharacteristic.Uuid;
         public override string Uuid => NativeCharacteristic.Uuid.ToString();
         public override CharacteristicPropertyType Properties => (CharacteristicPropertyType)(int)NativeCharacteristic.CharacteristicProperties;
 
-        public override event EventHandler<CharacteristicUpdatedEventArgs> ValueUpdated;
+        public override event EventHandler<CharacteristicUpdatedEventArgs>? ValueUpdated;
         public override byte[] Value => _value ?? new byte[0]; // return empty array if value is equal to null
 
         public override string Name => string.IsNullOrEmpty(NativeCharacteristic.UserDescription)
@@ -87,13 +87,20 @@ namespace Plugin.BLE.UWP
         /// </summary>
         private void OnCharacteristicValueChanged(object sender, GattValueChangedEventArgs e)
         {
-            _value = e.CharacteristicValue?.ToArray(); //add value to array
+            _value = e.CharacteristicValue?.ToArray() ?? new byte[1]; //add value to array
             ValueUpdated?.Invoke(this, new CharacteristicUpdatedEventArgs(this));
         }
 
-        public override void EnableNotification()
+        public async override Task<bool> EnableNotification()
         {
-            return;
+            var result = await
+                NativeCharacteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
+                GattClientCharacteristicConfigurationDescriptorValue.Notify);
+
+            NativeCharacteristic.ValueChanged -= OnCharacteristicValueChanged;
+            NativeCharacteristic.ValueChanged += OnCharacteristicValueChanged;
+
+            return result == GattCommunicationStatus.Success;
         }
     }
 }

@@ -64,12 +64,12 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <summary>
         /// Source for <see cref="Characteristic"/>
         /// </summary>
-        private GattCharacteristic _characteristic;
+        private GattCharacteristic? _characteristic;
 
         /// <summary>
         /// A byte array representation of the characteristic value
         /// </summary>
-        private byte[] _data;
+        private byte[]? _data;
 
         /// <summary>
         /// Source for <see cref="IsIndicateSet"/>
@@ -84,7 +84,7 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <summary>
         /// Raw buffer of this value of this characteristic
         /// </summary>
-        private IBuffer _rawData;
+        private IBuffer? _rawData;
 
         /// <summary>
         /// Source for <see cref="DisplayType"/>
@@ -94,22 +94,22 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <summary>
         /// Source for <see cref="Name"/>
         /// </summary>
-        private string _name;
+        private string? _name;
 
         /// <summary>
         /// Source for <see cref="Parent"/>
         /// </summary>
-        private ObservableGattDeviceService _parent;
+        private ObservableGattDeviceService? _parent;
 
         /// <summary>
         /// Source for <see cref="UUID"/>
         /// </summary>
-        private string _uuid;
+        private string? _uuid;
 
         /// <summary>
         /// Source for <see cref="Value"/>
         /// </summary>
-        private string _value;
+        private string? _value;
 
         /// <summary>
         /// Gets or sets which DispatcherQueue is used to dispatch UI updates.
@@ -124,16 +124,15 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <param name="dispatcherQueue">The DispatcherQueue that should be used to dispatch UI updates, or null if this is being called from the UI thread.</param>
         public ObservableGattCharacteristics(GattCharacteristic characteristic, ObservableGattDeviceService parent, DispatcherQueue dispatcherQueue = null)
         {
-            DispatcherQueue = dispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
+            DispatcherQueue = dispatcherQueue ??
+                DispatcherQueueController.CreateOnDedicatedThread().DispatcherQueue;
 
             Characteristic = characteristic;
             Parent = parent;
             Name = GattUuidsService.ConvertUuidToName(Characteristic.Uuid);
             UUID = Characteristic.Uuid.ToString();
 
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            ReadValueAsync();
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            _ = ReadValueAsync();
         }
 
         /// <summary>
@@ -310,7 +309,7 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <summary>
         /// Event to notify when this object has changed
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
         /// Reads the value of the Characteristic
@@ -502,7 +501,7 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
                 return;
             }
 
-            GattPresentationFormat format = null;
+            GattPresentationFormat? format = null;
 
             if (Characteristic.PresentationFormats.Any())
             {
@@ -519,6 +518,10 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
                 }
                 else
                 {
+                    if (_rawData == null)
+                    {
+                        return;
+                    }
                     var isString = true;
                     var buffer = GattConvert.ToUTF8String(_rawData);
 

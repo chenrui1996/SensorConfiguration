@@ -133,7 +133,7 @@ namespace Plugin.BLE.Abstractions.Contracts
         /// </returns>
         Task<IDescriptor> GetDescriptorAsync(Guid id, CancellationToken cancellationToken = default);
 
-        public void EnableNotification();
+        public Task<bool> EnableNotification();
     }
 }
 

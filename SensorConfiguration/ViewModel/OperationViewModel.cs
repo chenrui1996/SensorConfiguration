@@ -25,6 +25,7 @@ using Plugin.BLE;
 using System.Windows;
 using System.Collections.Concurrent;
 using Plugin.BLE.Abstractions;
+using SensorConfiguration.Attributes;
 
 namespace SensorConfiguration.ViewModel
 {
@@ -235,13 +236,9 @@ namespace SensorConfiguration.ViewModel
         #endregion
 
         #region 登录
-        /// <summary>
-        /// 已登录设备
-        /// </summary>
-        private ObservableCollection<BluetoothItem> loggedBluetooths 
-            = new ObservableCollection<BluetoothItem>();
+        private ObservableCollection<BluetoothItem> loggedBluetooths;
 
-        //private BLEDeviceHelper helper;
+
         /// <summary>
         /// 已登录设备
         /// </summary>
@@ -275,7 +272,205 @@ namespace SensorConfiguration.ViewModel
                         item.IsSelected = item.Id == value?.Id;
                     }
                     DisconnectEnabled = selectedLoggedBluetooth != null;
+                    HandleDeviceParameters(selectedLoggedBluetooth);
                 }
+            }
+        }
+        #endregion
+
+        #region 设备信息
+        /// <summary>
+        /// 设备信息
+        /// </summary>
+        private ConcurrentDictionary<Guid, DeviceParameters> _deviceParameterDic = DeviceInfo.DeviceParameterDic;
+
+        private void HandleDeviceParameters(BluetoothItem? selectedLoggedBluetooth)
+        {
+            if (selectedLoggedBluetooth == null)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    InitDeviceParametersKeyValue(new DeviceParameters());
+                });
+                return;
+            }
+            if(!_deviceParameterDic.ContainsKey(selectedLoggedBluetooth.Id))
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    InitDeviceParametersKeyValue(new DeviceParameters());
+                });
+                return;
+            }
+            var deviceParameter = _deviceParameterDic[selectedLoggedBluetooth.Id];
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                InitDeviceParametersKeyValue(deviceParameter);
+            });
+        }
+
+        /// <summary>
+        /// 初始化配置信息列表
+        /// </summary>
+        /// <param name="configurationInfo"></param>
+        /// <param name="daliFlag"></param>
+        private void InitDeviceParametersKeyValue(DeviceParameters deviceParameters)
+        {
+            if (deviceParameters == null)
+            {
+                return;
+            }
+
+            DeviceParameters.Clear();
+
+            var properties = typeof(DeviceParameters).GetProperties();
+            foreach (var property in properties)
+            {
+                DeviceParameters.Add(new ListViewModel
+                {
+                    Key = property.Name,
+                    KeyValue = new KeyValue
+                    {
+                        Key = property.Name,
+                        Value = property.GetValue(deviceParameters)?.ToString()
+                    }
+                });
+            }
+        }
+
+        private ObservableCollection<ListViewModel>? deviceParameters;
+
+        public ObservableCollection<ListViewModel> DeviceParameters
+        {
+            get { return deviceParameters; }
+            set
+            {
+                SetProperty(ref deviceParameters, value);
+            }
+        }
+        #endregion
+
+        #region 配置信息
+        /// <summary>
+        /// 初始化配置信息列表
+        /// </summary>
+        /// <param name="configurationInfo"></param>
+        /// <param name="daliFlag"></param>
+        private void InitKeyValue(ConfigurationInfo configurationInfo, bool daliFlag = false)
+        {
+            if (configurationInfo == null)
+            {
+                return;
+            }
+
+            ConfigurationInfos.Clear();
+
+            var properties = typeof(ConfigurationInfo).GetProperties();
+            foreach (var property in properties)
+            {
+                var attribute = property.GetCustomAttribute<PropertyConfigAttribute>();
+                if (!daliFlag && attribute != null && attribute.Group == "DALI Specific")
+                {
+                    continue;
+                }
+                ConfigurationInfos.Add(new ListViewModel
+                {
+                    Key = property.Name,
+                    KeyValue = new KeyValue
+                    {
+                        Key = property.Name,
+                        DaliFlag = daliFlag,
+                        Value = property.GetValue(configurationInfo)?.ToString()
+                    }
+                });
+            }
+        }
+
+        private ObservableCollection<ListViewModel>? configurationInfos;
+
+        public ObservableCollection<ListViewModel> ConfigurationInfos
+        {
+            get { return configurationInfos; }
+            set
+            {
+                SetProperty(ref configurationInfos, value);
+            }
+        }
+        #endregion
+
+        #region 配置
+        /// <summary>
+        /// 打开配置页面
+        /// </summary>
+        public ICommand ConfigurationButtonCommand { get; }
+
+        /// <summary>
+        /// 打开配置页面
+        /// </summary>
+        /// <param name="listViewModel"></param>
+        private async void OpenConfigurationPopup(ListViewModel? listViewModel)
+        {
+            try
+            {
+                if (SelectedLoggedBluetooth == null)
+                {
+                    return;
+                }
+                if (listViewModel == null)
+                {
+                    return;
+                }
+                new DialogService().ShowConfiguationModal(listViewModel, typeof(ConfigurationInfo));
+            }
+            catch (Exception e)
+            {
+                await new DialogService().DisplayAlertAsync("错误", e.Message, "确定");
+            }
+        }
+
+        public ICommand CommitConfigurationCommand { get; }
+
+        private async void CommitConfiguration()
+        {
+            if (SelectedLoggedBluetooth == null)
+            {
+                return;
+            }
+            BLEDeviceHelper? helper = null;
+            try
+            {
+                if (!_deviceDic.ContainsKey(SelectedLoggedBluetooth.Id))
+                {
+                    await new DialogService().DisplayAlertAsync("提示", "设备查找失败", "OK");
+                    return;
+                }
+                var selectDevice = _deviceDic[SelectedLoggedBluetooth.Id];
+                helper = BLEDeviceHelper.GetBLEDeviceHelper(selectDevice);
+                var daliFlag = DeviceInfo.IsFDPDevice(helper.GetDevice().Id);
+                var configurationInfo = new ConfigurationInfo();
+                var properties = typeof(ConfigurationInfo).GetProperties();
+                foreach (var property in properties)
+                {
+                    var attribute = property.GetCustomAttribute<PropertyConfigAttribute>();
+                    if (!daliFlag && attribute != null && attribute.Group == "DALI Specific")
+                    {
+                        continue;
+                    }
+                    var val = ConfigurationInfos.FirstOrDefault(f => f.Key == property.Name)?.KeyValue?.Value ?? "0";
+                    property.SetValue(configurationInfo, Convert.ToByte(val));
+                }
+                var re = await helper.RequestInformation(configurationInfo);
+                if (!re)
+                {
+                    await new DialogService().DisplayAlertAsync("提示", "上传失败", "确定");
+                    return;
+                }
+                await new DialogService().DisplayAlertAsync("提示", "上传成功", "确定");
+                //SelectedLoggedBluetooth = null;
+            }
+            catch (Exception e)
+            {
+                await new DialogService().DisplayAlertAsync("错误", e.Message, "确定");
             }
         }
         #endregion
@@ -295,9 +490,18 @@ namespace SensorConfiguration.ViewModel
             //初始化蓝牙
             Ble = CrossBluetoothLE.Current;
             Adapter = CrossBluetoothLE.Current.Adapter;
-            LoggedBluetooths = new ObservableCollection<BluetoothItem>();
+            loggedBluetooths = ((App)Application.Current).LoggedDevices.LoggedBluetooths;
             //初始化登录指令
             DisconnectDeviceCommand = new RelayCommand(DisconnectDevice);
+            //初始化设备信息
+            DeviceParameters = new ObservableCollection<ListViewModel>();
+            InitDeviceParametersKeyValue(new DeviceParameters());
+            //初始化配置信息列表
+            ConfigurationInfos = new ObservableCollection<ListViewModel>();
+            InitKeyValue(new ConfigurationInfo());
+            //初始化配置命令
+            ConfigurationButtonCommand = new RelayCommand<ListViewModel>(OpenConfigurationPopup);
+            CommitConfigurationCommand = new RelayCommand(CommitConfiguration);
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace SensorConfiguration.Services
 {
@@ -16,22 +17,24 @@ namespace SensorConfiguration.Services
         {
             await Task.Run(() =>
             {
-                PopupWindow.ShowDialog(message, title, true);
+                HandyControl.Controls.MessageBox.Show(message, title, MessageBoxButton.OKCancel);
             });
 
         }
 
         public void DisplayAlert(string title, string message, string cancel)
         {
-            PopupWindow.ShowDialog(message, title, true);
+            HandyControl.Controls.MessageBox.Show(message, title, MessageBoxButton.OKCancel);
         }
 
-        public async Task<string> DisplayPromptAsync(string title, string message, string accept, string cancel)
+        public async Task DisplayPasswordDialogAsync(string title, string message, string accept, string cancel)
         {
-            return await Task.Run(() =>
+            await Task.Run(() =>
             {
-                return "";
+                PopupWindow.ShowDialog(message, title, true);
             });
+
+            //return new PopupWindow().ShowDialog(new PasswordBox(), true);
             //return await Application.Current.MainPage.DisplayPromptAsync(title, message, accept, cancel);
         }
 
@@ -253,6 +256,13 @@ namespace SensorConfiguration.Services
             ScanDialog modalDialog = new ScanDialog();
             //new PopupWindow().Show(modalDialog, true);
             modalDialog.ShowDialog();
+        }
+
+        public string ShowPasswordDialog()
+        {
+            PasswordDialog modalDialog = new PasswordDialog();
+            modalDialog.ShowDialog();
+            return modalDialog.Result;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Plugin.BLE.Abstractions;
+﻿using HandyControl.Tools.Converter;
+using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
 using SensorConfiguration.Helper.BLE.Messages;
@@ -50,19 +51,22 @@ namespace SensorConfiguration.Helper.BLE
             bluetoothLog = BluetoothLog.BluetoothMessages;
             Sequence = 1;
             Device = device;
-            EnableNotification();
         }
 
         public static BLEDeviceHelper GetBLEDeviceHelper(IDevice device)
         {
             if (device.State != DeviceState.Connected)
             {
-                new DialogService().DisplayAlert("提示", "设备未连接", "OK");
                 return null;
             }
             if (!BLEDeviceHelperDic.ContainsKey(device.Id))
             {
                 var bleDeviceHelper = new BLEDeviceHelper(device);
+                var re = bleDeviceHelper.EnableNotification();
+                if (!re)
+                {
+                    return null;
+                }
                 BLEDeviceHelperDic.TryAdd(device.Id, bleDeviceHelper);
             }
             return BLEDeviceHelperDic[device.Id];
@@ -119,15 +123,32 @@ namespace SensorConfiguration.Helper.BLE
         /// <summary>
         /// 启用通知
         /// </summary>
-        private async void EnableNotification()
+        private bool EnableNotification()
         {
-            var characteristic = await GetReadCharacteristic();
-            if (characteristic == null)
+            var re = Task.Run( async () =>
             {
-                return;
-            }
-            characteristic.EnableNotification();
-            characteristic.ValueUpdated += Characteristic_ValueUpdated;
+                try
+                {
+                    var characteristic = await GetReadCharacteristic();
+                    if (characteristic == null)
+                    {
+                        return false;
+                    }
+                    var re = await characteristic.EnableNotification();
+                    if (!re)
+                    {
+                        return false;
+                    }
+                    characteristic.ValueUpdated += Characteristic_ValueUpdated;
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+               
+            });
+            return re.Result;
         }
 
         /// <summary>
@@ -155,7 +176,7 @@ namespace SensorConfiguration.Helper.BLE
                 {
                     return false;
                 }
-                characteristic.WriteType = CharacteristicWriteType.WithoutResponse;
+                characteristic.WriteType = CharacteristicWriteType.Default;
                 var message = new SendMessage
                 {
                     Sequence = GetSequence(),
@@ -171,11 +192,12 @@ namespace SensorConfiguration.Helper.BLE
                     Message = GetHexString(bytes),
                     Type = "Send"
                 });
+                App.InfoLog.Info(string.Format("Type:[{0}]|Sender:[{1}]|Message:[{2}]", "Send", Device.Name, GetHexString(bytes)));
                 return re == 0;
             }
             catch (Exception e)
             {
-                new DialogService().DisplayAlert("提示", e.Message, "OK");
+                App.ErrorLog.Info(e.Message);
                 return false;
             }
             
@@ -264,7 +286,7 @@ namespace SensorConfiguration.Helper.BLE
                 Encoding.ASCII.GetBytes(password.PadRight(16, '0')));
         }
 
-        public CancellationTokenSource CancellationTokenSource { set; get; }
+        public CancellationTokenSource? CancellationTokenSource { set; get; }
 
         /// <summary>
         /// 权限认证
@@ -318,10 +340,14 @@ namespace SensorConfiguration.Helper.BLE
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Characteristic_ValueUpdated(object sender, CharacteristicUpdatedEventArgs e)
+        private void Characteristic_ValueUpdated(object? sender, CharacteristicUpdatedEventArgs e)
         {
             try
             {
+                if (sender == null)
+                {
+                    return;
+                }
                 var characteristic = e.Characteristic;
                 var receiveMessage = new ReceiveMessage(characteristic.Value, DeviceInfo.IsFDPDevice(Device.Id));
                 bluetoothLog?.Add(new BluetoothMessageItem
@@ -331,42 +357,42 @@ namespace SensorConfiguration.Helper.BLE
                     Message = GetHexString(characteristic.Value),
                     Type = "Receive"
                 });
+                App.InfoLog.Info(string.Format("Type:[{0}]|Sender:[{1}]|Message:[{2}]", "Receive", Device.Name, GetHexString(characteristic.Value)));
                 HandleDeviceParameters(receiveMessage);
                 ValueUpdated?.Invoke(this, receiveMessage);
             }
             catch (Exception ex)
             {
-                new DialogService().DisplayAlert("提示", ex.Message, "OK");
+                App.ErrorLog.Info(ex.Message);
             }
         }
 
         private void HandleDeviceParameters(ReceiveMessage receiveMessage)
         {
-            //if (receiveMessage == null)
-            //{
-            //    return;
-            //}
-            //if (receiveMessage.GetMessageType() != (byte)MessageType.DeviceParameters)
-            //{
-            //    return;
-            //}
-            //var deviceInfo = DependencyService.Resolve<DeviceInfo>();
-            //if (deviceInfo == null)
-            //{
-            //    return;
-            //}
-            //var deviceParameter = receiveMessage.GetResult() as DeviceParameters;
-            //if (!deviceInfo.DeviceParameterDic.ContainsKey(Device.Id))
-            //{
-            //    deviceInfo.DeviceParameterDic.Add(Device.Id, deviceParameter);
-            //    return;
-            //}
-            //deviceInfo.DeviceParameterDic[Device.Id] = deviceParameter;
+            if (receiveMessage == null)
+            {
+                return;
+            }
+            if (receiveMessage.GetMessageType() != (byte)MessageType.DeviceParameters)
+            {
+                return;
+            }
+            var deviceParameter = receiveMessage.GetResult() as DeviceParameters;
+            if (deviceParameter == null)
+            {
+                return;
+            }
+            if (!DeviceInfo.DeviceParameterDic.ContainsKey(Device.Id))
+            {
+                DeviceInfo.DeviceParameterDic.TryAdd(Device.Id, deviceParameter);
+                return;
+            }
+            DeviceInfo.DeviceParameterDic[Device.Id] = deviceParameter;
         }
 
 
         #region Test Mode
-        public event EventHandler<RemainderEventArgs> RemainderUpdated;
+        public event EventHandler<RemainderEventArgs>? RemainderUpdated;
 
         /// <summary>
         /// 获取测试模式剩余时间
@@ -386,7 +412,7 @@ namespace SensorConfiguration.Helper.BLE
             return re;
         }
 
-        private Task TestModeTask;
+        private Task? TestModeTask;
 
         private int Remainder = 0;
 

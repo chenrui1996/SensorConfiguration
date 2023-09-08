@@ -19,11 +19,12 @@ namespace SensorConfiguration
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : HandyControl.Controls.Window
     {
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainWindowViewModel();
         }
 
         private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)

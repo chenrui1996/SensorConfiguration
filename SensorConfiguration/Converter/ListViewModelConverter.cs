@@ -23,13 +23,13 @@ namespace SensorConfiguration.Converter
             }
             try
             {
-                string typeName = "Sensor_Configer.Models." + parameter;
-                Type type = Type.GetType(typeName);
+                string typeName = "SensorConfiguration.Models." + parameter;
+                Type? type = Type.GetType(typeName);
                 if (type == null)
                 {
                     return key;
                 }
-                PropertyInfo propertyInfo = type.GetProperty(key);
+                PropertyInfo? propertyInfo = type.GetProperty(key);
                 if (propertyInfo == null)
                 {
                     return key;
@@ -64,13 +64,13 @@ namespace SensorConfiguration.Converter
             }
             try
             {
-                string typeName = "Sensor_Configer.Models." + parameter;
-                Type type = Type.GetType(typeName);
+                string typeName = "SensorConfiguration.Models." + parameter;
+                Type? type = Type.GetType(typeName);
                 if (type == null)
                 {
                     return keyValue.Value;
                 }
-                PropertyInfo propertyInfo = type.GetProperty(keyValue.Key);
+                PropertyInfo? propertyInfo = type.GetProperty(keyValue.Key ?? "");
                 if (propertyInfo == null)
                 {
                     return keyValue.Value;
@@ -85,6 +85,10 @@ namespace SensorConfiguration.Converter
                     case PropertyType.None:
                         return keyValue.Value;
                     case PropertyType.WithUnit:
+                        if (string.IsNullOrEmpty(keyValue.Value))
+                        {
+                            return "no info";
+                        }
                         if (keyValue.Value == "0" && parameter.ToString() != "DeviceParameters")
                         {
                             return "Disabled";

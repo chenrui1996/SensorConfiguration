@@ -168,7 +168,7 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// Gets the bluetooth device this class wraps
         /// </summary>
         /// <value>The bluetooth le device.</value>
-        public BluetoothLEDevice BluetoothLEDevice
+        public BluetoothLEDevice? BluetoothLEDevice
         {
             get
             {
@@ -417,7 +417,8 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
             //{
                 //DispatcherQueue?.TryEnqueue(() =>
                 //{
-                    if (BluetoothLEDevice == null)
+                    if (BluetoothLEDevice == null 
+                        || BluetoothLEDevice.ConnectionStatus == BluetoothConnectionStatus.Disconnected)
                     {
                         var ret = Task.Run(async () =>
                         {
@@ -471,6 +472,10 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
 
         }
 
+        public void DisConnect()
+        {
+            BluetoothLEDevice = null;
+        }
         /// <summary>
         /// Does the in application pairing
         /// </summary>
@@ -544,7 +549,7 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
             {
                 DispatcherQueue?.TryEnqueue(() =>
                 {
-                    Name = BluetoothLEDevice.Name;
+                    Name = BluetoothLEDevice?.Name ?? "";
                 });
             });
             
@@ -562,7 +567,7 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
                 DispatcherQueue?.TryEnqueue(() =>
                 {
                     IsPaired = DeviceInfo.Pairing.IsPaired;
-                    IsConnected = BluetoothLEDevice.ConnectionStatus == BluetoothConnectionStatus.Connected;
+                    IsConnected = BluetoothLEDevice?.ConnectionStatus == BluetoothConnectionStatus.Connected;
                 });
             });
         }

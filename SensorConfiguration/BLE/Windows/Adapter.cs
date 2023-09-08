@@ -89,14 +89,15 @@ namespace Plugin.BLE.UWP
 
             ConnectedDeviceRegistry[device.Id.ToString()] = device;
 
+            await nativeDevice.DeviceInfo.Pairing.UnpairAsync();
             // 配对设置
             DeviceInformationCustomPairing pairing = nativeDevice.DeviceInfo.Pairing.Custom;
-
+            
             // 配置自定义配对
             pairing.PairingRequested -= Device_PairingRequested;
             pairing.PairingRequested += Device_PairingRequested;
 
-            var result = await nativeDevice.DeviceInfo.Pairing.Custom.PairAsync(DevicePairingKinds.ProvidePin);
+            var result = await pairing.PairAsync(DevicePairingKinds.ProvidePin);
             if (result.Status != DevicePairingResultStatus.Paired &&
                 result.Status != DevicePairingResultStatus.AlreadyPaired)
             {
@@ -147,10 +148,11 @@ namespace Plugin.BLE.UWP
         {
             // Windows doesn't support disconnecting, so currently just dispose of the device
             Trace.Message($"Disconnected from device with ID:  {device.Id}");
-            
-            if (device.NativeDevice is ObservableBluetoothLEDevice)
+
+            if (device.NativeDevice is ObservableBluetoothLEDevice nativeDevice)
             {
                 ((Device)device).ClearServices();
+                //nativeDevice.DisConnect();
                 device.Dispose();
             }
         }
@@ -205,7 +207,7 @@ namespace Plugin.BLE.UWP
 
             if (DiscoveredDevicesRegistry.TryGetValue(deviceId, out var device))
             {
-                Trace.Message("AdvertisdedPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
+                //Trace.Message("AdvertisdedPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
                 (device as Device)?.Update(btAdv.RawSignalStrengthInDBm, ParseAdvertisementData(btAdv.Advertisement));
                 this.HandleDiscoveredDevice(device);
             }
@@ -219,7 +221,7 @@ namespace Plugin.BLE.UWP
                 if (bluetoothLeDevice != null) //make sure advertisement bluetooth address actually returns a device
                 {
                     device = new Device(this, bluetoothLeDevice, btAdv.RawSignalStrengthInDBm, deviceId, _dq, ParseAdvertisementData(btAdv.Advertisement), btAdv.IsConnectable);
-                    Trace.Message("DiscoveredPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
+                    //Trace.Message("DiscoveredPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
                     this.HandleDiscoveredDevice(device);
                 }
             }

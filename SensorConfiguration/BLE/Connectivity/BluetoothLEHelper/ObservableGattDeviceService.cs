@@ -27,17 +27,17 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <summary>
         /// Source for <see cref="Name" />
         /// </summary>
-        private string _name;
+        private string? _name;
 
         /// <summary>
         /// Source for <see cref="Service" />
         /// </summary>
-        private GattDeviceService _service;
+        private GattDeviceService? _service;
 
         /// <summary>
         /// Source for <see cref="UUID" />
         /// </summary>
-        private string _uuid;
+        private string? _uuid;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObservableGattDeviceService" /> class.
@@ -135,7 +135,7 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
         /// <summary>
         /// Event to notify when this object has changed
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
         /// Property changed event invoker
@@ -157,7 +157,7 @@ namespace Microsoft.Toolkit.Uwp.Connectivity
                 () => Service.GetCharacteristicsAsync(BluetoothCacheMode.Uncached),
                 tokenSource.Token);
 
-            GattCharacteristicsResult result = null;
+            GattCharacteristicsResult? result = null;
             result = await getCharacteristicsTask;
 
             if (result.Status == GattCommunicationStatus.Success)

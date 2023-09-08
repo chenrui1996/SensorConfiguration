@@ -227,6 +227,6 @@ namespace Plugin.BLE.Abstractions
         /// </summary>
         protected abstract Task StopUpdatesNativeAsync(CancellationToken cancellationToken = default);
 
-        public abstract void EnableNotification();
+        public abstract Task<bool> EnableNotification();
     }
 }
