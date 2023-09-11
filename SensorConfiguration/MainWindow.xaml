@@ -7,7 +7,7 @@
         xmlns:hc="https://handyorg.github.io/handycontrol" 
         mc:Ignorable="d"
         Title="MainWindow"
-        Height="755"
+        Height="785"
         Width="1060" 
         WindowStyle="None" 
         Background="{DynamicResource MainContentBackgroundBrush}"

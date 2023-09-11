@@ -1,5 +1,4 @@
-﻿using SensorConfiguration.ViewModel;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,20 +10,18 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SensorConfiguration.Views
+namespace SensorConfiguration.Views.Dialogs
 {
     /// <summary>
-    /// Operation.xaml 的交互逻辑
+    /// Window1.xaml 的交互逻辑
     /// </summary>
-    public partial class Log : Page
+    public partial class Window1 : HandyControl.Controls.Window
     {
-        public Log()
+        public Window1()
         {
             InitializeComponent();
-            DataContext = new LogViewModel();
         }
     }
 }

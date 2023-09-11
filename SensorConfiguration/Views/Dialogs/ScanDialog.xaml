@@ -106,18 +106,28 @@
                 ItemsSource="{Binding UseableBluetooths}"  
                 SelectedItem="{Binding SelectedUseableBluetooth}"
                 SelectionMode ="Single">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Background"
+                                Value="Transparent" />
+                        <!-- 其他样式设置 -->
+                    </Style>
+                </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel 
-                            Width="260"
+                            Width="300"
                             Orientation="Vertical"
                             Height="60"
                             >
+                            <StackPanel 
+                                Orientation="Vertical"
+                                Background="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
+                                Height="60"
+                                Width="300">
                                 <StackPanel 
-                                    Width="260"
                                     Grid.Row="0"
-                                    Orientation="Horizontal"
-                                    >
+                                    Orientation="Horizontal">
                                     <Label 
                                         FontSize="13"
                                         FontWeight="Bold"
@@ -125,22 +135,21 @@
                                         Background="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
                                         BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
                                         Content="{Binding Name}"
-                                    ></Label>
+                                ></Label>
                                 </StackPanel>
 
                                 <StackPanel 
-                                    Width="260"
                                     Grid.Row="0"
-                                    Orientation="Horizontal"
-                                    >
+                                    Orientation="Horizontal">
                                     <Label 
                                         FontSize="12"
                                         Foreground="{Binding IsSelected, Converter={StaticResource BoolToTextColorConverter}}"
                                         Background="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
                                         BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
                                         Content="{Binding Address}"
-                                    ></Label>
+                                ></Label>
                                 </StackPanel>
+                            </StackPanel>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>

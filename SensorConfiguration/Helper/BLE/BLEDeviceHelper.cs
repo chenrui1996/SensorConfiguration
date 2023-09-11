@@ -282,8 +282,17 @@ namespace SensorConfiguration.Helper.BLE
         /// <returns></returns>
         public async Task<bool> AuthenticationSetPassword(string password)
         {
-            return await WriteAsync(0x0C,
+            var re = await WriteAsync(0x0C,
                 Encoding.ASCII.GetBytes(password.PadRight(16, '0')));
+            if (!DeviceInfo.DevicePasswordDic.ContainsKey(Device.Id))
+            {
+                DeviceInfo.DevicePasswordDic.TryAdd(Device.Id, password);
+            }
+            else
+            {
+                DeviceInfo.DevicePasswordDic[Device.Id] = password;
+            }
+            return re;
         }
 
         public CancellationTokenSource? CancellationTokenSource { set; get; }
@@ -295,8 +304,17 @@ namespace SensorConfiguration.Helper.BLE
         /// <returns></returns>
         public async Task<bool> AuthenticationRequest(string password)
         {
-            return await WriteAsync(0x0A,
+            var re = await WriteAsync(0x0A,
                 Encoding.ASCII.GetBytes(password.PadRight(16, '0')));
+            if (!DeviceInfo.DevicePasswordDic.ContainsKey(Device.Id))
+            {
+                DeviceInfo.DevicePasswordDic.TryAdd(Device.Id, password);
+            }
+            else
+            {
+                DeviceInfo.DevicePasswordDic[Device.Id] = password;
+            }
+            return re;
         }
 
         /// <summary>

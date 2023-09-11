@@ -95,7 +95,7 @@ namespace SensorConfiguration.Converter
                         }
                         if ((!keyValue.DaliFlag || string.IsNullOrEmpty(attribute.DaliUnit)) && attribute.Unit == "Volts")
                         {
-                            return decimal.Parse(keyValue.Value ?? "0") / 10 + attribute.Unit;
+                            return decimal.Parse(keyValue.Value ?? "0") / 10 + " " + attribute.Unit;
                         }
                         return keyValue.Value + " " + (keyValue.DaliFlag && !string.IsNullOrEmpty(attribute.DaliUnit) ? attribute.DaliUnit : attribute.Unit);
                     case PropertyType.Enum:

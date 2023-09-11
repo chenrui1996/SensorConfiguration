@@ -26,5 +26,20 @@ namespace SensorConfiguration.Views
             InitializeComponent();
             DataContext = new OperationViewModel();
         }
+
+        private void ListView_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (LoggedBluetoothListView.SelectedItem != null)
+            {
+                // 处理选中项
+                var selectedItem = LoggedBluetoothListView.SelectedItem;
+                // 执行操作
+                var dataContext = DataContext as OperationViewModel;
+                if (dataContext != null)
+                {
+                    dataContext.ExecuteItemSelected(selectedItem);
+                }
+            }
+        }
     }
 }

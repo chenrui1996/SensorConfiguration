@@ -6,7 +6,7 @@
       xmlns:hc="https://handyorg.github.io/handycontrol" 
       xmlns:local="clr-namespace:SensorConfiguration.Converter"
       mc:Ignorable="d" 
-      d:DesignHeight="700" d:DesignWidth="1000"
+      d:DesignHeight="740" d:DesignWidth="1000"
       Background="WhiteSmoke"
       Title="Operation">
     <Page.Resources>
@@ -37,7 +37,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
                 <RowDefinition />
-                <RowDefinition Height="400"/>
+                <RowDefinition Height="470"/>
             </Grid.RowDefinitions>
             <Button
                 Grid.Row="0"
@@ -47,23 +47,33 @@
                 Width="254" 
                 Height="42"
                 Style="{StaticResource ButtonPrimary}"
-                Background="#FF326CF3"
-                BorderBrush="DarkGray">
+                Background="{DynamicResource PrimaryBrush}"
+                BorderBrush="{DynamicResource PrimaryBrush}">
             </Button>
 
             <ListView Grid.Row="1"
+                Name="LoggedBluetoothListView"
                 Effect="{DynamicResource EffectShadow2}" 
                 Padding="0"
                 Margin="4" 
                 Background="White"
-                ItemsSource="{Binding LoggedBluetooths}"  
-                SelectedItem="{Binding SelectedLoggedBluetooth}"
+                ItemsSource="{Binding LoggedBluetooths}"
+                PreviewMouseLeftButtonDown ="ListView_PreviewMouseLeftButtonDown" 
                 SelectionMode ="Single">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Background"
+                                Value="Transparent" />
+                        <!-- 其他样式设置 -->
+                    </Style>
+                </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel 
                             Orientation="Vertical"
-                            Height="60">
+                            Background="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
+                            Height="60"
+                            Width="260">
                             <StackPanel 
                                 Grid.Row="0"
                                 Orientation="Horizontal">
@@ -99,7 +109,7 @@
                     Effect="{DynamicResource EffectShadow2}" 
                     Margin="4">
                     <hc:Card.Header>
-                        <StackPanel 
+                        <StackPanel
                             Margin="0">
                             <TextBlock 
                                 TextWrapping="NoWrap"
@@ -113,71 +123,133 @@
                         </StackPanel>
                     </hc:Card.Header>
                     <Border CornerRadius="4,4,0,0" >
-                        <ListView
-                            Effect="{DynamicResource EffectShadow2}" 
-                            Padding="0"
-                            Margin="0" 
-                            Height="350"
-                            Background="White"
-                            ItemsSource="{Binding DeviceParameters}"  
-                            SelectionMode="Extended">
-                            <ListView.ItemContainerStyle>
-                                <Style TargetType="ListViewItem">
-                                    <Setter Property="Focusable" Value="false"/>
-                                    <Setter Property="Background" Value="Transparent" />
-                                    <Setter Property="BorderBrush" Value="Transparent" />
-                                    <Setter Property="BorderThickness" Value="0" />
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="false">
-                                            <Setter Property="Background" Value="Transparent" />
-                                            <Setter Property="BorderBrush" Value="Transparent" />
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ListView.ItemContainerStyle>
-                            <ListView.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel 
+                        <StackPanel Orientation="Vertical" Margin="0,5,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Grid MinWidth="250" Grid.RowSpan="2">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="101"/>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="30"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Right"
+                                        FontWeight="Bold"
+                                        Background="White"
+                                        BorderBrush="White"
+                                        Content="Device Name"/>
+                                    <hc:TextBox
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        IsEnabled="False"
+                                        FontWeight="Bold"
+                                        Text="{Binding DeviceName}"/>
+                                    <Button 
+                                        Content=">" 
+                                        Grid.Row="0"
+                                        Grid.Column="2"
+                                        Foreground="White"
+                                        FontWeight="Bold"
+                                        BorderBrush="{DynamicResource PrimaryBrush}"
+                                        Background="{DynamicResource PrimaryBrush}"/>
+                                    <Label 
+                                        Margin="0,2,0,0"
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Right"
+                                        FontWeight="Bold"
+                                        Background="White"
+                                        BorderBrush="White"
+                                        Content="Password"/>
+                                    <hc:TextBox
+                                        Margin="0,2,0,0"
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        IsEnabled="False"
+                                        FontWeight="Bold"
+                                        Text="{Binding Password}"/>
+                                    <Button 
+                                        Margin="0,2,0,0"
+                                        Content=">" 
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        Foreground="White"
+                                        FontWeight="Bold"
+                                        BorderBrush="{DynamicResource PrimaryBrush}"
+                                        Background="{DynamicResource PrimaryBrush}"/>
+                                </Grid>
+                            </StackPanel>
+                            <ListView
+                                Effect="{DynamicResource EffectShadow2}" 
+                                Padding="0"
+                                Margin="0,5,0,0" 
+                                Height="350"
+                                Background="White"
+                                ItemsSource="{Binding DeviceParameters}"  
+                                SelectionMode="Extended">
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="Focusable" Value="false"/>
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="false">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Setter Property="BorderBrush" Value="Transparent" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel 
                                         Orientation="Vertical"
                                         Height="32">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="130" />
-                                                <ColumnDefinition Width="100" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock 
-                                                Margin="10,0,0,0"
-                                                TextWrapping="Wrap"
-                                                Text=
-                                                "{
-                                                    Binding Key,
-                                                    Converter={StaticResource ListViewKeyConverter},
-                                                    ConverterParameter=DeviceParameters
-                                                }" 
-                                                Foreground="Black"
-                                                FontWeight="Bold"
-                                                Background="White"
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Center"
-                                                Grid.Column="0"/>
-                                            <Label 
-                                                Margin="10,0,0,0"
-                                                HorizontalAlignment="Left"
-                                                FontWeight="Bold"
-                                                Background="White"
-                                                BorderBrush="White"
-                                                Content=
-                                                "{
-                                                    Binding KeyValue,
-                                                    Converter={StaticResource ListViewValueConverter},
-                                                    ConverterParameter=DeviceParameters
-                                                }" 
-                                                Grid.Column="1"/>
-                                        </Grid>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="130" />
+                                                    <ColumnDefinition Width="100" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock 
+                                                    Margin="10,0,0,0"
+                                                    TextWrapping="Wrap"
+                                                    Text=
+                                                    "{
+                                                        Binding Key,
+                                                        Converter={StaticResource ListViewKeyConverter},
+                                                        ConverterParameter=DeviceParameters
+                                                    }" 
+                                                    Foreground="Black"
+                                                    FontWeight="Bold"
+                                                    Background="White"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center"
+                                                    Grid.Column="0"/>
+                                                <Label 
+                                                    Margin="10,0,0,0"
+                                                    HorizontalAlignment="Left"
+                                                    Background="White"
+                                                    BorderBrush="White"
+                                                    Content=
+                                                    "{
+                                                        Binding KeyValue,
+                                                        Converter={StaticResource ListViewValueConverter},
+                                                        ConverterParameter=DeviceParameters
+                                                    }" 
+                                                    Grid.Column="1"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                        
                     </Border>
                 </hc:Card>
             </StackPanel>
@@ -212,12 +284,10 @@
                             </StackPanel>
                         </hc:Card.Header>
                         <!--Card 的内容部分-->
-                        <Border CornerRadius="4,4,0,0" Width="160" >
+                        <Border CornerRadius="4,4,0,0">
                             <ListView
                                 Padding="0"
-                                Margin="-280,0,-280,0" 
                                 Height="200"
-                                Width="720"
                                 Background="White" >
                                 <ListView.ItemContainerStyle>
                                     <Style TargetType="ListViewItem">
@@ -272,7 +342,6 @@
                                                     <Label 
                                                         Margin="10,0,0,0"
                                                         HorizontalAlignment="Left"
-                                                        FontWeight="Bold"
                                                         Background="White"
                                                         BorderBrush="White"
                                                         Content=
@@ -285,9 +354,10 @@
                                                     <Button 
                                                         Content=">" 
                                                         Grid.Column="2"
-                                                        Foreground="#3f5186"
+                                                        Foreground="White"
                                                         FontWeight="Bold"
-                                                        Background="White"/>
+                                                        BorderBrush="{DynamicResource PrimaryBrush}"
+                                                        Background="{DynamicResource PrimaryBrush}"/>
                                                 </Grid>
                                             </StackPanel>
                                         </DataTemplate>
@@ -297,6 +367,7 @@
                         </Border>
                     </hc:Card>
                 </StackPanel>
+
                 <StackPanel Grid.Row="1">
                     <hc:Card 
                         BorderThickness="0" 
@@ -319,11 +390,209 @@
                             </StackPanel>
                         </hc:Card.Header>
                         <!--Card 的内容部分-->
-                        <Border CornerRadius="4,4,0,0" Width="160" >
-                            <TextBlock TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Center" Text="测试"/>
+                        <Border CornerRadius="4,4,0,0">
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal">
+                                    <CheckBox Content="Enable/Disable"
+                                        Margin="10,10,0,10"
+                                        FontWeight="Bold"
+                                        IsChecked="{Binding EnableStatus}">
+                                    </CheckBox>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Grid HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel 
+                                            Grid.Column="0">
+                                            <Label 
+                                                Margin="10,0,0,0"
+                                                Content="Day" 
+                                                BorderBrush="White"
+                                                FontWeight="Bold"
+                                                HorizontalAlignment="Left">
+                                            </Label>
+                                            <ListView
+                                                Grid.Column="0"
+                                                Padding="0"
+                                                Height="200"
+                                                Background="White" >
+                                                <ListView.ItemContainerStyle>
+                                                    <Style TargetType="ListViewItem">
+                                                        <Setter Property="Focusable" Value="false"/>
+                                                        <Setter Property="Background" Value="Transparent" />
+                                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                                        <Setter Property="BorderThickness" Value="0" />
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="Transparent" />
+                                                                <Setter Property="BorderBrush" Value="Transparent" />
+                                                                <Setter Property="BorderThickness" Value="0" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ListView.ItemContainerStyle>
+                                                <ItemsControl ItemsSource="{Binding DayConfigurations}"  >
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel
+                                                                Width="350"
+                                                                Orientation="Horizontal" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel 
+                                                                Margin="0,3,0,0"
+                                                                Orientation="Vertical"
+                                                                Height="35">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="160" />
+                                                                        <ColumnDefinition Width="140" />
+                                                                        <ColumnDefinition Width="40" />
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock 
+                                                                        Margin="10,0,0,0"
+                                                                        TextWrapping="Wrap"
+                                                                        Text=
+                                                                        "{
+                                                                            Binding Key,
+                                                                            Converter={StaticResource ListViewKeyConverter},
+                                                                            ConverterParameter=ContinuousDimmingConfiguration
+                                                                        }" 
+                                                                        Foreground="Black"
+                                                                        FontWeight="Bold"
+                                                                        Background="White"
+                                                                        HorizontalAlignment="Right"
+                                                                        VerticalAlignment="Center"
+                                                                        Grid.Column="0"/>
+                                                                    <Label 
+                                                                        Margin="10,0,0,0"
+                                                                        HorizontalAlignment="Left"
+                                                                        Background="White"
+                                                                        BorderBrush="White"
+                                                                        Content=
+                                                                        "{
+                                                                            Binding KeyValue,
+                                                                            Converter={StaticResource ListViewValueConverter},
+                                                                            ConverterParameter=ContinuousDimmingConfiguration
+                                                                        }" 
+                                                                        Grid.Column="1"/>
+                                                                    <Button 
+                                                                        Content=">" 
+                                                                        Grid.Column="2"
+                                                                        Foreground="White"
+                                                                        FontWeight="Bold"
+                                                                        BorderBrush="{DynamicResource PrimaryBrush}"
+                                                                        Background="{DynamicResource PrimaryBrush}"/>
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </ListView>
+                                        </StackPanel>
+                                        <StackPanel 
+                                            Grid.Column="1">
+                                            <Label 
+                                                Margin="10,0,0,0"
+                                                Content="Night" 
+                                                BorderBrush="White"
+                                                FontWeight="Bold"
+                                                HorizontalAlignment="Left">
+                                            </Label>
+                                            <ListView
+                                                Grid.Column="0"
+                                                Padding="0"
+                                                Height="200"
+                                                Background="White" >
+                                                <ListView.ItemContainerStyle>
+                                                    <Style TargetType="ListViewItem">
+                                                        <Setter Property="Focusable" Value="false"/>
+                                                        <Setter Property="Background" Value="Transparent" />
+                                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                                        <Setter Property="BorderThickness" Value="0" />
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="Transparent" />
+                                                                <Setter Property="BorderBrush" Value="Transparent" />
+                                                                <Setter Property="BorderThickness" Value="0" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ListView.ItemContainerStyle>
+                                                <ItemsControl ItemsSource="{Binding NightConfigurations}"  >
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel
+                                                                Width="350"
+                                                                Orientation="Horizontal" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel 
+                                                                Margin="0,3,0,0"
+                                                                Orientation="Vertical"
+                                                                Height="35">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="160" />
+                                                                        <ColumnDefinition Width="140" />
+                                                                        <ColumnDefinition Width="40" />
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock 
+                                                                        Margin="10,0,0,0"
+                                                                        TextWrapping="Wrap"
+                                                                        Text=
+                                                                        "{
+                                                                            Binding Key,
+                                                                            Converter={StaticResource ListViewKeyConverter},
+                                                                            ConverterParameter=ContinuousDimmingConfiguration
+                                                                        }" 
+                                                                        Foreground="Black"
+                                                                        FontWeight="Bold"
+                                                                        Background="White"
+                                                                        HorizontalAlignment="Right"
+                                                                        VerticalAlignment="Center"
+                                                                        Grid.Column="0"/>
+                                                                    <Label 
+                                                                        Margin="10,0,0,0"
+                                                                        HorizontalAlignment="Left"
+                                                                        Background="White"
+                                                                        BorderBrush="White"
+                                                                        Content=
+                                                                        "{
+                                                                            Binding KeyValue,
+                                                                            Converter={StaticResource ListViewValueConverter},
+                                                                            ConverterParameter=ContinuousDimmingConfiguration
+                                                                        }" 
+                                                                        Grid.Column="1"/>
+                                                                    <Button 
+                                                                        Content=">" 
+                                                                        Grid.Column="2"
+                                                                        Foreground="White"
+                                                                        FontWeight="Bold"
+                                                                        BorderBrush="{DynamicResource PrimaryBrush}"
+                                                                        Background="{DynamicResource PrimaryBrush}"/>
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </ListView>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </StackPanel>
+
                         </Border>
                     </hc:Card>
                 </StackPanel>
+
                 <StackPanel Grid.Row="2">
                     <hc:Card 
                         BorderThickness="0" 
@@ -332,7 +601,7 @@
                         <!--Card 的尾部部分-->
                         <hc:Card.Header>
                             <StackPanel 
-                            Margin="0">
+                                Margin="0">
                                 <!--Card 的一级内容-->
                                 <TextBlock 
                                     TextWrapping="NoWrap"
@@ -346,13 +615,90 @@
                             </StackPanel>
                         </hc:Card.Header>
                         <!--Card 的内容部分-->
-                        <Border CornerRadius="4,4,0,0" Width="160" >
-                            <TextBlock TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Center" Text="测试"/>
+                        <Border CornerRadius="4,4,0,0" >
+                            <ListView
+                                Padding="0"
+                                Height="88"
+                                Background="White" >
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="Focusable" Value="false"/>
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Setter Property="BorderBrush" Value="Transparent" />
+                                                <Setter Property="BorderThickness" Value="0" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ItemsControl ItemsSource="{Binding ControlInfos}"  >
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel
+                                                Width="688"
+                                                Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel 
+                                                Margin="0,3,0,0"
+                                                Orientation="Vertical"
+                                                Height="35">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="150" />
+                                                        <ColumnDefinition Width="150" />
+                                                        <ColumnDefinition Width="40" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock 
+                                                        Margin="10,0,0,0"
+                                                        TextWrapping="Wrap"
+                                                        Text=
+                                                        "{
+                                                            Binding Key,
+                                                            Converter={StaticResource ListViewKeyConverter},
+                                                            ConverterParameter=DeviceAutoNotify
+                                                        }" 
+                                                        Foreground="Black"
+                                                        FontWeight="Bold"
+                                                        Background="White"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Grid.Column="0"/>
+                                                    <Label 
+                                                        Margin="10,0,0,0"
+                                                        HorizontalAlignment="Left"
+                                                        Background="White"
+                                                        BorderBrush="White"
+                                                        Content=
+                                                        "{
+                                                            Binding KeyValue,
+                                                            Converter={StaticResource ListViewValueConverter},
+                                                            ConverterParameter=DeviceAutoNotify
+                                                        }" 
+                                                        Grid.Column="1"/>
+                                                    <Button 
+                                                        Content=">" 
+                                                        Grid.Column="2"
+                                                        Foreground="White"
+                                                        FontWeight="Bold"
+                                                        BorderBrush="{DynamicResource PrimaryBrush}"
+                                                        Background="{DynamicResource PrimaryBrush}"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ListView>
                         </Border>
                     </hc:Card>
                 </StackPanel>
             </Grid>
         </hc:ScrollViewer>
-
     </Grid>
 </Page>

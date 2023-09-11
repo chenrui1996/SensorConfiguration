@@ -9,6 +9,16 @@
       Background="White"
       Title="Log">
     <Grid>
-        <Label>2222</Label>
+        <StackPanel Orientation="Vertical">
+            <Label Content="{Binding DeviceName}"></Label>
+            <TextBox Text="{Binding DeviceName}"></TextBox>
+            <Button 
+                Content="确定" 
+                Command="{Binding OpenDialogCommand}"
+                >
+                
+            </Button>
+        </StackPanel>
+       
     </Grid>
 </Page>

@@ -12,6 +12,8 @@ namespace SensorConfiguration.SharedData
     {
         public static ConcurrentDictionary<Guid, IDevice> DeviceDic = new ConcurrentDictionary<Guid, IDevice>();
 
+        public static ConcurrentDictionary<Guid, string> DevicePasswordDic = new ConcurrentDictionary<Guid, string>();
+
         public static ConcurrentDictionary<Guid, DeviceParameters> DeviceParameterDic = new ConcurrentDictionary<Guid, DeviceParameters>();
         
         public static ConcurrentDictionary<Guid, DeviceAutoNotify> DeviceAutoNotifyDic = new ConcurrentDictionary<Guid, DeviceAutoNotify>();

@@ -181,6 +181,7 @@ namespace SensorConfiguration.ViewModel.Dialogs
             }
             catch (Exception e)
             {
+                App.ErrorLog.Error(e);
                 new DialogService().DisplayAlert("提示", e.Message, "OK");
             }
         }
@@ -248,8 +249,9 @@ namespace SensorConfiguration.ViewModel.Dialogs
                 string value = (string)(property.GetValue(nativeDevice) ?? "");
                 return value;
             }
-            catch
+            catch(Exception e)
             {
+                App.ErrorLog.Error(e);
                 return "";
             }
 
@@ -264,9 +266,9 @@ namespace SensorConfiguration.ViewModel.Dialogs
                     Adapter.StopScanningForDevicesAsync();
                 }
             }
-            catch
+            catch(Exception e)
             {
-
+                App.ErrorLog.Error(e);
             }
         }
         #endregion
@@ -307,7 +309,6 @@ namespace SensorConfiguration.ViewModel.Dialogs
             }
         }
 
-        private CancellationTokenSource? _cancellationTokenSource;
         /// <summary>
         /// 连接并登录
         /// </summary>
@@ -341,6 +342,7 @@ namespace SensorConfiguration.ViewModel.Dialogs
             }
             catch (Exception e)
             {
+                App.ErrorLog.Error(e);
                 new DialogService().DisplayAlert("提示", e.Message, "OK");
                 new DialogService().HideLoadingModal();
             }
@@ -383,6 +385,7 @@ namespace SensorConfiguration.ViewModel.Dialogs
             }
             catch (Exception e)
             {
+                App.ErrorLog.Error(e);
                 new DialogService().DisplayAlert("提示", e.Message, "OK");
                 new DialogService().HideLoadingModal();
             }
@@ -451,9 +454,9 @@ namespace SensorConfiguration.ViewModel.Dialogs
             {
 
             }
-            catch
+            catch(Exception e)
             {
-
+                App.ErrorLog.Error(e);
             }
         }
 
@@ -538,6 +541,7 @@ namespace SensorConfiguration.ViewModel.Dialogs
             }
             catch (Exception e)
             {
+                App.ErrorLog.Error(e);
                 new DialogService().DisplayAlert("提示", e.Message, "OK");
                 new DialogService().HideLoadingModal();
             }
@@ -546,20 +550,27 @@ namespace SensorConfiguration.ViewModel.Dialogs
 
         public ScanViewModel()
         {
-            StartScanEnabled = true;
-            DefultPasswordEnabled = true;
-            NewDeviceEnabled = true;
-            //初始化蓝牙
-            Ble = CrossBluetoothLE.Current;
-            Adapter = CrossBluetoothLE.Current.Adapter;
-            Adapter.DeviceDiscovered += DeviceDiscoveredHandle;
-            Adapter.DeviceActionParing += OnDeviceActionParing;
-            Adapter.DeviceBounded += OnDeviceBounded;
-            
-            //初始化扫描指令
-            StartScanCommand = new RelayCommand(StartScan);
-            //初始化连接指令
-            ConnectToDeviceCommand = new RelayCommand(ConnectToDevice);
+            try
+            {
+                StartScanEnabled = true;
+                DefultPasswordEnabled = true;
+                NewDeviceEnabled = true;
+                //初始化蓝牙
+                Ble = CrossBluetoothLE.Current;
+                Adapter = CrossBluetoothLE.Current.Adapter;
+                Adapter.DeviceDiscovered += DeviceDiscoveredHandle;
+                Adapter.DeviceActionParing += OnDeviceActionParing;
+                Adapter.DeviceBounded += OnDeviceBounded;
+
+                //初始化扫描指令
+                StartScanCommand = new RelayCommand(StartScan);
+                //初始化连接指令
+                ConnectToDeviceCommand = new RelayCommand(ConnectToDevice);
+            }
+            catch(Exception e)
+            {
+                App.ErrorLog.Error(e);
+            }
         }
     }
 }
