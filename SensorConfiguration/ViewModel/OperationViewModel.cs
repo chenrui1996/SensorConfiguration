@@ -26,11 +26,39 @@ using System.Windows;
 using System.Collections.Concurrent;
 using Plugin.BLE.Abstractions;
 using SensorConfiguration.Attributes;
+using SensorConfiguration.Views.Dialogs;
 
 namespace SensorConfiguration.ViewModel
 {
     public class OperationViewModel : ObservableRecipient
     {
+        #region loading
+
+        private Visibility _loadingFlag = Visibility.Collapsed;
+
+        public Visibility LoadingFlag
+        {
+            get { return _loadingFlag; }
+            set
+            {
+                if (_loadingFlag != value)
+                {
+                    SetProperty(ref _loadingFlag, value);
+                }
+            }
+        }
+
+        private void ShowLoadingModal()
+        {
+            LoadingFlag = Visibility.Visible;
+        }
+
+        private void HideLoadingModal()
+        {
+            LoadingFlag = Visibility.Collapsed;
+        }
+        #endregion
+
         #region 设备信息
         /// <summary>
         /// 蓝牙
@@ -151,13 +179,15 @@ namespace SensorConfiguration.ViewModel
         }
 
         /// <summary>
-        /// 打开扫码创建
+        /// 打开扫码窗口
         /// </summary>
-        public ICommand OpenSacnDialogCommand { get; }
+        public ICommand? OpenScanDialogCommand { get; }
 
         private void OpenSacnDialog()
         {
+            ShowLoadingModal();
             new DialogService().ShowScanDialog();
+            HideLoadingModal();
         }
         #endregion
 
@@ -166,13 +196,13 @@ namespace SensorConfiguration.ViewModel
         /// <summary>
         /// 断连指令
         /// </summary>
-        public ICommand DisconnectDeviceCommand { get; }
+        public ICommand? DisconnectDeviceCommand { get; }
 
         /// <summary>
         /// 断连
         /// </summary>
         /// <param name="obj"></param>
-        public void DisconnectDevice()
+        public async void DisconnectDevice()
         {
             try
             {
@@ -187,8 +217,16 @@ namespace SensorConfiguration.ViewModel
                     {
                         return;
                     }
+                    ShowLoadingModal();
                     var selectDevice = _deviceDic[SelectedLoggedBluetooth.Id];
-                    DisconnectDeviceNative(selectDevice);
+                    var re = await DisconnectDeviceNative(selectDevice);
+                    if (!re)
+                    {
+                        new DialogService().DisplayAlert("提示", "设备断连失败", "OK");
+                        HideLoadingModal();
+                        return;
+                    }
+                    
                     LoggedBluetooths.Clear();
                     foreach (var device in Adapter.ConnectedDevices)
                     {
@@ -200,10 +238,18 @@ namespace SensorConfiguration.ViewModel
                             Address = GetDeviceAddress(device)
                         });
                     }
+
+                    DeviceName = "";
+                    Password = "";
+                    InitDeviceParametersKeyValue(new DeviceParameters());
+                    InitContinuousDimmingKeyValue(new ContinuousDimmingConfiguration());
+                    InitControlInfosKeyValue();
+                    HideLoadingModal();
                 }
             }
             catch (Exception e)
             {
+                HideLoadingModal();
                 App.ErrorLog.Error(e);
                 new DialogService().DisplayAlert("提示", e.Message, "OK");
             }
@@ -245,21 +291,26 @@ namespace SensorConfiguration.ViewModel
 
         }
 
-        private async void DisconnectDeviceNative(IDevice device)
+        private async Task<bool> DisconnectDeviceNative(IDevice device)
         {
             if (Adapter == null)
             {
-                return;
+                return false;
             }
 
             await Adapter.DisconnectDeviceAsync(device);
 
-            BLEDeviceHelper.RemoveBLEDeviceHelper(device.Id);
-
             if (Adapter.ConnectedDevices.Any(r => r.Id == device.Id))
             {
-                new DialogService().DisplayAlert("提示", "设备断连失败", "OK");
+                return false;
             }
+
+            BLEDeviceHelper.RemoveBLEDeviceHelper(device.Id);
+            if (_deviceDic.ContainsKey(device.Id))
+            {
+                _deviceDic.TryRemove(device.Id, out _);
+            }
+            return true;
         }
         #endregion
 
@@ -413,6 +464,92 @@ namespace SensorConfiguration.ViewModel
             }
         }
 
+
+        public ICommand? UpdateDeviceNameCommand { get; }
+
+        private async void UpdateDeviceName()
+        {
+            try
+            {
+                if (SelectedLoggedBluetooth == null)
+                {
+                    return;
+                }
+                if (!_deviceDic.ContainsKey(SelectedLoggedBluetooth.Id))
+                {
+                    new DialogService().DisplayAlert("提示", "设备查找失败", "OK");
+                    return;
+                }
+                var selectDevice = _deviceDic[SelectedLoggedBluetooth.Id];
+                var helper = BLEDeviceHelper.GetBLEDeviceHelper(selectDevice);
+                if (helper == null)
+                {
+                    new DialogService().DisplayAlert("提示", "设备查找失败", "OK");
+                    return;
+                }
+                ShowLoadingModal();
+                var deviceName = new DialogService().ShowTextBoxDialog("Set Device Name", "请输入名称", DeviceName);
+                HideLoadingModal();
+                if (string.IsNullOrWhiteSpace(deviceName))
+                {
+                    return;
+                }
+                var re = await helper.SetDeviceName(deviceName);
+                if (!re)
+                {
+                    await new DialogService().DisplayAlertAsync("提示", "操作失败", "OK");
+                    return;
+                }
+                DeviceName = deviceName;
+            }
+            catch (Exception e)
+            {
+                await new DialogService().DisplayAlertAsync("错误", e.Message, "确定");
+            }
+        }
+
+        public ICommand? UpdatePasswordCommand { get; }
+
+        private async void UpdatePassword()
+        {
+            try
+            {
+                if (SelectedLoggedBluetooth == null)
+                {
+                    return;
+                }
+                if (!_deviceDic.ContainsKey(SelectedLoggedBluetooth.Id))
+                {
+                    new DialogService().DisplayAlert("提示", "设备查找失败", "OK");
+                    return;
+                }
+                var selectDevice = _deviceDic[SelectedLoggedBluetooth.Id];
+                var helper = BLEDeviceHelper.GetBLEDeviceHelper(selectDevice);
+                if (helper == null)
+                {
+                    new DialogService().DisplayAlert("提示", "设备查找失败", "OK");
+                    return;
+                }
+                ShowLoadingModal();
+                var password = new DialogService().ShowTextBoxDialog("Set Password", "请输入密码", Password);
+                HideLoadingModal();
+                if (string.IsNullOrWhiteSpace(password))
+                {
+                    return;
+                }
+                var re = await helper.AuthenticationSetPassword(password);
+                if (!re)
+                {
+                    await new DialogService().DisplayAlertAsync("提示", "操作失败", "OK");
+                    return;
+                }
+                Password = password;
+            }
+            catch (Exception e)
+            {
+                await new DialogService().DisplayAlertAsync("错误", e.Message, "确定");
+            }
+        }
         #endregion
 
         #region 配置信息
@@ -479,7 +616,7 @@ namespace SensorConfiguration.ViewModel
         /// <summary>
         /// 打开配置页面
         /// </summary>
-        public ICommand ConfigurationButtonCommand { get; }
+        public ICommand? ConfigurationButtonCommand { get; }
 
         /// <summary>
         /// 打开配置页面
@@ -497,7 +634,9 @@ namespace SensorConfiguration.ViewModel
                 {
                     return;
                 }
+                ShowLoadingModal();
                 new DialogService().ShowConfiguationModal(listViewModel, typeof(ConfigurationInfo));
+                HideLoadingModal();
             }
             catch (Exception e)
             {
@@ -505,7 +644,7 @@ namespace SensorConfiguration.ViewModel
             }
         }
 
-        public ICommand CommitConfigurationCommand { get; }
+        public ICommand? CommitConfigurationCommand { get; }
 
         private async void CommitConfiguration()
         {
@@ -660,7 +799,7 @@ namespace SensorConfiguration.ViewModel
         /// <summary>
         /// 打开配置页面
         /// </summary>
-        public ICommand ContinuousDimmingConfigurationButtonCommand { get; }
+        public ICommand? ContinuousDimmingConfigurationButtonCommand { get; }
 
         /// <summary>
         /// 打开配置页面
@@ -678,7 +817,9 @@ namespace SensorConfiguration.ViewModel
                 {
                     return;
                 }
+                ShowLoadingModal();
                 new DialogService().ShowConfiguationModal(listViewModel, typeof(ContinuousDimmingConfiguration));
+                HideLoadingModal();
             }
             catch (Exception e)
             {
@@ -686,7 +827,7 @@ namespace SensorConfiguration.ViewModel
             }
         }
 
-        public ICommand CommitContinuousDimmingConfigurationCommand { get; }
+        public ICommand? CommitContinuousDimmingConfigurationCommand { get; }
 
         private async void CommitContinuousDimmingConfiguration()
         {
@@ -714,7 +855,6 @@ namespace SensorConfiguration.ViewModel
                         return;
                     }
                     await new DialogService().DisplayAlertAsync("提示", "上传成功", "确定");
-                    new DialogService().BackBeforPage();
                     return;
                 }
                 configurationInfo.EnableStatus = 1;
@@ -750,7 +890,6 @@ namespace SensorConfiguration.ViewModel
                     return;
                 }
                 await new DialogService().DisplayAlertAsync("提示", "上传成功", "确定");
-                new DialogService().BackBeforPage();
             }
             catch (Exception e)
             {
@@ -813,7 +952,7 @@ namespace SensorConfiguration.ViewModel
         /// <summary>
         /// 打开配置页面
         /// </summary>
-        public ICommand ControlButtonCommand { get; }
+        public ICommand? ControlButtonCommand { get; }
 
         /// <summary>
         /// 打开配置页面
@@ -838,14 +977,18 @@ namespace SensorConfiguration.ViewModel
                 switch (listViewModel.Key)
                 {
                     case "Test Mode":
+                        ShowLoadingModal();
                         new DialogService().ShowTestModeModal(SelectedLoggedBluetooth);
+                        HideLoadingModal();
                         break;
                     case "LoadLevel":
                         if (listViewModel.KeyValue.Value == "0")
                         {
                             break;
                         }
+                        ShowLoadingModal();
                         new DialogService().ShowDimmerLevelModal(SelectedLoggedBluetooth, listViewModel);
+                        HideLoadingModal();
                         break;
                 }
 
@@ -1043,6 +1186,7 @@ namespace SensorConfiguration.ViewModel
                 if (!_deviceDic.ContainsKey(bluetoothItem.Id))
                 {
                     await new DialogService().DisplayAlertAsync("提示", "设备查找失败", "OK");
+                    return;
                 }
                 var selectDevice = _deviceDic[bluetoothItem.Id];
                 helper = BLEDeviceHelper.GetBLEDeviceHelper(selectDevice);
@@ -1052,6 +1196,7 @@ namespace SensorConfiguration.ViewModel
                 if (!re)
                 {
                     await new DialogService().DisplayAlertAsync("提示", "关闭通知失败", "OK");
+                    return;
                 }
                 UpdateControlInfoKeyValue("LoadLevel", "0");
                 UpdateControlInfoKeyValue("LightSensorLevel", "0");
@@ -1073,7 +1218,7 @@ namespace SensorConfiguration.ViewModel
             {
                 if (arg.Remainder == 0)
                 {
-                    UpdateControlInfoKeyValue("Test Mode", " off");
+                    UpdateControlInfoKeyValue("Test Mode", " OFF");
                     return;
                 }
                 UpdateControlInfoKeyValue("Test Mode", arg.Remainder + " Seconds");
@@ -1090,7 +1235,7 @@ namespace SensorConfiguration.ViewModel
                 DefultPasswordEnabled = true;
                 NewDeviceEnabled = true;
                 BluetoothViewEnabled = true;
-                OpenSacnDialogCommand = new RelayCommand(OpenSacnDialog);
+                OpenScanDialogCommand = new RelayCommand(OpenSacnDialog);
                 Trace.TraceImplementation += (s, a) =>
                 {
                     App.InfoLog.Info(s);
@@ -1123,6 +1268,9 @@ namespace SensorConfiguration.ViewModel
                 InitControlInfosKeyValue();
                 //初始化控制命令
                 ControlButtonCommand = new RelayCommand<ListViewModel>(OpenControlPopup);
+
+                UpdateDeviceNameCommand = new RelayCommand(UpdateDeviceName);
+                UpdatePasswordCommand = new RelayCommand(UpdatePassword);
             }
             catch (Exception e)
             {

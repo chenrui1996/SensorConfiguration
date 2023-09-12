@@ -1,4 +1,4 @@
-﻿using SensorConfiguration.ViewModel.Dialogs;
+﻿using HandyControl.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,14 +16,18 @@ using System.Windows.Shapes;
 namespace SensorConfiguration.Views.Dialogs
 {
     /// <summary>
-    /// ScanDialog.xaml 的交互逻辑
+    /// PasswordDialogs.xaml 的交互逻辑
     /// </summary>
-    public partial class ScanDialog : HandyControl.Controls.Window
+    public partial class TextBoxDialog : HandyControl.Controls.Window
     {
-        public ScanDialog()
+        public string? Result { get; private set; }
+
+        public TextBoxDialog(string title, string lable, string defult = "")
         {
             InitializeComponent();
-            DataContext = new ScanViewModel();
+            this.title_lable.Content = title;
+            this.textbox_lable.Content = lable;
+            this.textbox.Text = defult;
         }
 
         private void Close_Click(object sender, RoutedEventArgs e)
@@ -39,12 +43,10 @@ namespace SensorConfiguration.Views.Dialogs
             }
         }
 
-        protected override void OnClosed(EventArgs e)
+        private void Confim_Click(object sender, RoutedEventArgs e)
         {
-            var scanViewModel = DataContext as ScanViewModel;
-            scanViewModel?.StopScan();
-            scanViewModel?.ClearEvents();
-            base.OnClosed(e);
+            Result = this.textbox.Text;
+            Close();
         }
     }
 }

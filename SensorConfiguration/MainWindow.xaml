@@ -13,53 +13,49 @@
         Background="{DynamicResource MainContentBackgroundBrush}"
         WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize"
         >
-    <Border Background="WhiteSmoke">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="60" />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Grid Grid.Row="0" Grid.Column="0" Margin="0" >
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="55"/>
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <Border
+    <Grid>
+        <Border Background="WhiteSmoke">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="60" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Row="0" Grid.Column="0" Margin="0" >
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="55"/>
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Border
                         Grid.Row="0"
                         Background="White"
                         MouseDown="TitleBar_MouseDown">
-                        
-                        <Button
+
+                            <Button
                             Padding="0"
                             Command="{Binding SelectCmd}" 
                             Width="40" 
                             Height="40"
                             BorderBrush="White">
-                            <hc:ImageBlock 
+                                <hc:ImageBlock 
                                 Source="/Assets/Images/logo.png" 
                                 Width="40" 
                                 Height="40"
                                 ToolTip="Legrand"
                             />
-                        </Button>
+                            </Button>
 
-                    </Border>
-                    <hc:SideMenu 
+                        </Border>
+                        <hc:SideMenu 
                         Grid.Row="1"
                         Width="60" 
                         AutoSelect="True"
                         BorderBrush="#3f3f41"
                     >
-                        <hc:Interaction.Triggers>
-                            <hc:EventTrigger EventName="SelectionChanged">
-                                <hc:EventToCommand Command="{Binding SwitchItemCmd}" PassEventArgsToCommand="True" />
-                            </hc:EventTrigger>
-                        </hc:Interaction.Triggers>
-                        <hc:SideMenuItem 
+                            <hc:SideMenuItem 
                             Margin="0,15,0,0"
                             ToolTip="基础功能"
                             Name="Operation"
@@ -69,12 +65,12 @@
                             Command="{Binding SelectCmd}" 
                             CommandParameter="{Binding .,RelativeSource={RelativeSource Self}}"
                             >
-                            <hc:SideMenuItem.Icon >
-                                <Image Source="/Assets/Images/menu_dashbord.png" Width="30" Height="30"/>
-                            </hc:SideMenuItem.Icon>
+                                <hc:SideMenuItem.Icon >
+                                    <Image Source="/Assets/Images/menu_dashbord.png" Width="30" Height="30"/>
+                                </hc:SideMenuItem.Icon>
 
-                        </hc:SideMenuItem>
-                        <hc:SideMenuItem 
+                            </hc:SideMenuItem>
+                            <hc:SideMenuItem 
                             ToolTip="自动化测试"
                             Name="AutoTest"
                             Command="{Binding SelectCmd}" 
@@ -82,11 +78,11 @@
                             Height="50"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                            <hc:SideMenuItem.Icon>
-                                <Image Source="/Assets/Images/menu_control.png" Width="30" Height="30"/>
-                            </hc:SideMenuItem.Icon>
-                        </hc:SideMenuItem>
-                        <hc:SideMenuItem 
+                                <hc:SideMenuItem.Icon>
+                                    <Image Source="/Assets/Images/menu_control.png" Width="30" Height="30"/>
+                                </hc:SideMenuItem.Icon>
+                            </hc:SideMenuItem>
+                            <hc:SideMenuItem 
                             ToolTip="配置"
                             Name="Setting"
                             Command="{Binding SelectCmd}" 
@@ -94,11 +90,11 @@
                             Height="50"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                            <hc:SideMenuItem.Icon>
-                                <Image Source="/Assets/Images/menu_config.png" Width="30" Height="30"/>
-                            </hc:SideMenuItem.Icon>
-                        </hc:SideMenuItem>
-                        <hc:SideMenuItem 
+                                <hc:SideMenuItem.Icon>
+                                    <Image Source="/Assets/Images/menu_config.png" Width="30" Height="30"/>
+                                </hc:SideMenuItem.Icon>
+                            </hc:SideMenuItem>
+                            <hc:SideMenuItem 
                             ToolTip="日志"
                             Name="Log"
                             Command="{Binding SelectCmd}" 
@@ -106,20 +102,20 @@
                             Height="50"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                            <hc:SideMenuItem.Icon>
-                                <Image Source="/Assets/Images/menu_log.png" Width="30" Height="30"/>
-                            </hc:SideMenuItem.Icon>
-                        </hc:SideMenuItem>
-                    </hc:SideMenu>
+                                <hc:SideMenuItem.Icon>
+                                    <Image Source="/Assets/Images/menu_log.png" Width="30" Height="30"/>
+                                </hc:SideMenuItem.Icon>
+                            </hc:SideMenuItem>
+                        </hc:SideMenu>
+                    </Grid>
                 </Grid>
-            </Grid>
-            <Grid Grid.Row="0" Grid.Column="1" Margin="0" >
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="55"/>
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <StackPanel 
+                <Grid Grid.Row="0" Grid.Column="1" Margin="0" >
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="55"/>
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <StackPanel 
                         Grid.Row="0"
                         Background="#3f3f41"
                         MouseDown="TitleBar_MouseDown"
@@ -127,13 +123,13 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Effect="{DynamicResource EffectShadow2}">
-                        <Grid MinWidth="1000" HorizontalAlignment="Stretch">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="40"/>
-                                <ColumnDefinition Width="50"/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0"
+                            <Grid MinWidth="1000" HorizontalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Background="#3f3f41"
@@ -143,41 +139,41 @@
                                 Foreground ="White"
                                 FontWeight="Bold"
                                 Content="{Binding PageTitle}">
-                            </Label>
-                            <Button Grid.Column="1"
+                                </Label>
+                                <Button Grid.Column="1"
                                 Click="Minimize_Click"
                                 Width="30" 
                                 Height="30"
                                 Background="#3f3f41"
                                 BorderBrush="#3f3f41">
-                                <hc:ImageBlock 
+                                    <hc:ImageBlock 
                                     Source="/Assets/Images/menu_minimize.png" 
                                     Width="20" 
                                     Height="20"
                                     ToolTip="Legrand"/>
-                            </Button>
-                            <Button Grid.Column="2"
+                                </Button>
+                                <Button Grid.Column="2"
                                 Click="Close_Click"
                                 Width="30" 
                                 Height="30"
                                 Background="#3f3f41"
                                 BorderBrush="#3f3f41">
-                                <hc:ImageBlock 
+                                    <hc:ImageBlock 
                                     Source="/Assets/Images/menu_close.png" 
                                     Width="20" 
                                     Height="20"
                                     ToolTip="Legrand"
                             />
-                            </Button>
-                        </Grid>
-                    </StackPanel>
-                    <Frame 
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                        <Frame 
                         Grid.Row="1"
                         NavigationUIVisibility="Hidden"
                         Content="{Binding CurrentPage}" />
+                    </Grid>
                 </Grid>
             </Grid>
-        </Grid>
-    </Border>
-
+        </Border>
+    </Grid>
 </hc:Window>

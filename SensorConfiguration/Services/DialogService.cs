@@ -27,235 +27,42 @@ namespace SensorConfiguration.Services
             HandyControl.Controls.MessageBox.Show(message, title, MessageBoxButton.OKCancel);
         }
 
-        public async Task DisplayPasswordDialogAsync(string title, string message, string accept, string cancel)
+        public void ShowConfiguationModal(ListViewModel listViewModel, Type type)
         {
-            await Task.Run(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                PopupWindow.ShowDialog(message, title, true);
+                ConfigurationDialog modalDialog = new ConfigurationDialog(listViewModel, type);
+                modalDialog.ShowDialog();
             });
-
-            //return new PopupWindow().ShowDialog(new PasswordBox(), true);
-            //return await Application.Current.MainPage.DisplayPromptAsync(title, message, accept, cancel);
         }
 
-        public async void ShowLoadingModal()
+        public void ShowTestModeModal(BluetoothItem selectedBluetoothItem)
         {
-            await Task.Run(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                return "";
+                TestModeDialog modalDialog = new TestModeDialog(selectedBluetoothItem);
+                modalDialog.ShowDialog();
             });
-            //var loadingPage = new LoadingPage
-            //{
-            //    CloseWhenBackgroundIsClicked = false
-            //};
-            //await PopupNavigation.Instance.PushAsync(loadingPage);
         }
 
-        public async void HideLoadingModal()
+        public void ShowDimmerLevelModal(BluetoothItem selectedBluetoothItem, ListViewModel listViewModel)
         {
-            await Task.Run(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                return "";
+                DimmerLevelDialog modalDialog = new DimmerLevelDialog(selectedBluetoothItem, listViewModel);
+                modalDialog.ShowDialog();
             });
-            //var popPage = PopupNavigation.Instance.PopupStack;
-            //if (!popPage.Any())
-            //{
-            //    return;
-            //}
-            //await PopupNavigation.Instance.PopAsync();
-        }
-
-        public async void ShowConfiguationModal(ListViewModel listViewModel, Type type)
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var loadingPage = new ConfigurationPropup(listViewModel, type)
-            //{
-            //    CloseWhenBackgroundIsClicked = true
-            //};
-            //await PopupNavigation.Instance.PushAsync(loadingPage);
-        }
-
-        public async void HideConfiguationModal()
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var popPage = PopupNavigation.Instance.PopupStack;
-            //if (!popPage.Any())
-            //{
-            //    return;
-            //}
-            //await PopupNavigation.Instance.PopAsync();
-        }
-
-        public async void ShowTestModeModal(BluetoothItem selectedBluetoothItem)
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var loadingPage = new TestModePropup(selectedBluetoothItem)
-            //{
-            //    CloseWhenBackgroundIsClicked = true
-            //};
-            //await PopupNavigation.Instance.PushAsync(loadingPage);
-        }
-
-        public async void HideTestModeModal()
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var popPage = PopupNavigation.Instance.PopupStack;
-            //if (!popPage.Any())
-            //{
-            //    return;
-            //}
-            //await PopupNavigation.Instance.PopAsync();
-        }
-
-        public async void ShowDimmerLevelModal(BluetoothItem selectedBluetoothItem, ListViewModel listViewModel)
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var loadingPage = new DimmerLevelPropup(selectedBluetoothItem, listViewModel)
-            //{
-            //    CloseWhenBackgroundIsClicked = true
-            //};
-            //await PopupNavigation.Instance.PushAsync(loadingPage);
-        }
-
-        public async void HideDimmerLevelModal()
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var popPage = PopupNavigation.Instance.PopupStack;
-            //if (!popPage.Any())
-            //{
-            //    return;
-            //}
-            //await PopupNavigation.Instance.PopAsync();
-        }
-
-        public async void ShowDeviceParameterModal(DeviceParameters deviceParameters)
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var loadingPage = new DeviceParametersPropup(deviceParameters)
-            //{
-            //    CloseWhenBackgroundIsClicked = true
-            //};
-            //await PopupNavigation.Instance.PushAsync(loadingPage);
-        }
-
-        public async void HideDeviceParameterModal()
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var popPage = PopupNavigation.Instance.PopupStack;
-            //if (!popPage.Any())
-            //{
-            //    return;
-            //}
-            //await PopupNavigation.Instance.PopAsync();
-        }
-
-        public async void ShowDeviceNameModal(BluetoothItem selectedBluetoothItem, ListViewModel listViewModel)
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var loadingPage = new DeviceNamePropup(selectedBluetoothItem, listViewModel)
-            //{
-            //    CloseWhenBackgroundIsClicked = true
-            //};
-            //await PopupNavigation.Instance.PushAsync(loadingPage);
-        }
-
-        public async void HideDeviceNameModal()
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var popPage = PopupNavigation.Instance.PopupStack;
-            //if (!popPage.Any())
-            //{
-            //    return;
-            //}
-            //await PopupNavigation.Instance.PopAsync();
-        }
-
-        public async void ShowModifyPasswordModal(BluetoothItem selectedBluetoothItem, bool canCancel)
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var popPage = new ModifyPasswordPropup(selectedBluetoothItem)
-            //{
-            //    CloseWhenBackgroundIsClicked = canCancel
-            //};
-            //await PopupNavigation.Instance.PushAsync(popPage);
-        }
-
-        public async void HideModifyPasswordModal()
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var popPage = PopupNavigation.Instance.PopupStack;
-            //if (!popPage.Any())
-            //{
-            //    return;
-            //}
-            //await PopupNavigation.Instance.PopAsync();
-        }
-
-        public async void ToContinuousDimmingPage(BluetoothItem selectedLoggedBluetooth, ContinuousDimmingConfiguration continuousDimmingConfig)
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var page = new ContinuousDimming(selectedLoggedBluetooth, continuousDimmingConfig);
-            //await Application.Current.MainPage.Navigation.PushAsync(page);
-        }
-
-        public async void BackBeforPage()
-        {
-            await Task.Run(() =>
-            {
-                return "";
-            });
-            //var popPage = Application.Current.MainPage.Navigation.NavigationStack;
-            //if (!popPage.Any())
-            //{
-            //    return;
-            //}
-            //await Application.Current.MainPage.Navigation.PopAsync();
         }
 
         public void ShowScanDialog()
         {
-            ScanDialog modalDialog = new ScanDialog();
-            //new PopupWindow().Show(modalDialog, true);
-            modalDialog.ShowDialog();
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ScanDialog modalDialog = new ScanDialog();
+                modalDialog.ShowDialog();
+                //ScanDialog dialog = DialogManager.GetHcDialog<ScanDialog>();
+                //dialog.ShowDialog();
+            });
         }
 
         public string ShowPasswordDialog()
@@ -263,6 +70,13 @@ namespace SensorConfiguration.Services
             PasswordDialog modalDialog = new PasswordDialog();
             modalDialog.ShowDialog();
             return modalDialog.Result;
+        }
+
+        public string ShowTextBoxDialog(string title, string lable, string defult = "")
+        {
+            var textBoxDialog = new TextBoxDialog(title, lable, defult);
+            textBoxDialog.ShowDialog();
+            return textBoxDialog.Result;
         }
     }
 }

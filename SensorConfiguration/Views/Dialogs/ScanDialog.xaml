@@ -24,6 +24,7 @@
                 FalseColor="Black" />
         </ResourceDictionary>
     </hc:Window.Resources>
+    <Grid>
     <Border Background="White">
         <Grid
             Grid.RowSpan="1"
@@ -77,28 +78,39 @@
                 Grid.Row="1"
                 Background="WhiteSmoke"
                 Orientation="Horizontal"
-                Width="300"
+                Width="300" HorizontalAlignment="Right"
                 >
-                <CheckBox Content="默认密码"
-                    Margin="10,0,0,0"
-                    IsChecked="{Binding DefultPasswordFlag}"
-                    IsEnabled="{Binding DefultPasswordEnabled}">
-                </CheckBox>
-                <CheckBox Content="新设备"
-                    Margin="12,0,0,0"
-                    IsChecked="{Binding NewDeviceFlag}"
-                    IsEnabled="{Binding NewDeviceEnabled}">
-                </CheckBox>
-                <Button
-                    Margin="20,0,0,0"
-                    Content="连接并登录"
-                    Padding="0"
-                    Command="{Binding ConnectToDeviceCommand}"
-                    Width="100" 
-                    Height="34"
-                    Style="{StaticResource ButtonPrimary}"
-                    BorderBrush="DarkGray">
-                </Button>
+                <Grid MinWidth="300">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="120"/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox 
+                        Content="默认密码" 
+                        Grid.Column="0" 
+                        HorizontalAlignment="Right"
+                        Margin="0,0,10,0"
+                        IsChecked="{Binding DefultPasswordFlag}"
+                        IsEnabled="{Binding DefultPasswordEnabled}">
+                    </CheckBox>
+                    <CheckBox Content="新设备" Grid.Column="0"
+                        Visibility="Collapsed"
+                        Margin="12,0,0,0"
+                        IsChecked="{Binding NewDeviceFlag}"
+                        IsEnabled="{Binding NewDeviceEnabled}">
+                    </CheckBox>
+                    <Button
+                        Margin="0,0,0,0" Grid.Column="1"
+                        Content="连接并登录"
+                        Padding="0"
+                        Command="{Binding ConnectToDeviceCommand}"
+                        Width="100" 
+                        Height="34"
+                        Style="{StaticResource ButtonPrimary}"
+                        HorizontalAlignment="Center">
+                    </Button>
+                </Grid>
+                
             </StackPanel>
             <ListView Grid.Row="2"
                 Padding="0"
@@ -161,11 +173,14 @@
                 Command="{Binding StartScanCommand}"
                 Width="290" 
                 Height="40"
-                Background="#FF326CF3"
-                Style="{StaticResource ButtonPrimary}"
-                BorderBrush="DarkGray">
+                Style="{StaticResource ButtonPrimary}">
             </Button>
         </Grid>
     </Border>
-
+        <!-- Loading overlay -->
+        <Grid Name="LoadingOverlay" Background="#80000000" Visibility="{Binding LoadingFlag}">
+            <!-- You can add loading indicators or text here -->
+            <TextBlock Text="Loading..." HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+        </Grid>
+    </Grid>
 </hc:Window>

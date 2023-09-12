@@ -39,18 +39,31 @@
                 <RowDefinition />
                 <RowDefinition Height="470"/>
             </Grid.RowDefinitions>
-            <Button
-                Grid.Row="0"
-                Content="添加设备"
-                Padding="0"
-                Command="{Binding OpenSacnDialogCommand}" 
-                Width="254" 
-                Height="42"
-                Style="{StaticResource ButtonPrimary}"
-                Background="{DynamicResource PrimaryBrush}"
-                BorderBrush="{DynamicResource PrimaryBrush}">
-            </Button>
-
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Button
+                    Grid.Column="0"
+                    Content="添加设备"
+                    Padding="0"
+                    Command="{Binding OpenScanDialogCommand}" 
+                    Width="110" 
+                    Height="40"
+                    Style="{StaticResource ButtonPrimary}">
+                </Button>
+                <Button
+                    Grid.Column="1"
+                    Content="断开连接"
+                    Padding="0"
+                    Command="{Binding DisconnectDeviceCommand}" 
+                    Width="110" 
+                    Height="40"
+                    Style="{StaticResource ButtonDanger}">
+                </Button>
+            </Grid>
+            
             <ListView Grid.Row="1"
                 Name="LoggedBluetoothListView"
                 Effect="{DynamicResource EffectShadow2}" 
@@ -58,7 +71,7 @@
                 Margin="4" 
                 Background="White"
                 ItemsSource="{Binding LoggedBluetooths}"
-                PreviewMouseLeftButtonDown ="ListView_PreviewMouseLeftButtonDown" 
+                SelectedItem="{Binding SelectedLoggedBluetooth}"
                 SelectionMode ="Single">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -155,6 +168,7 @@
                                         Grid.Column="2"
                                         Foreground="White"
                                         FontWeight="Bold"
+                                        Command="{Binding UpdateDeviceNameCommand}" 
                                         BorderBrush="{DynamicResource PrimaryBrush}"
                                         Background="{DynamicResource PrimaryBrush}"/>
                                     <Label 
@@ -180,6 +194,7 @@
                                         Grid.Column="2"
                                         Foreground="White"
                                         FontWeight="Bold"
+                                        Command="{Binding UpdatePasswordCommand}" 
                                         BorderBrush="{DynamicResource PrimaryBrush}"
                                         Background="{DynamicResource PrimaryBrush}"/>
                                 </Grid>
@@ -270,22 +285,42 @@
                         <!--Card 的尾部部分-->
                         <hc:Card.Header>
                             <StackPanel 
+                                Orientation="Horizontal"
                                 Margin="0">
+                                <Grid MinWidth="700">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                        TextWrapping="NoWrap"
+                                        Margin="10"
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        Foreground="Black"
+                                        TextTrimming="CharacterEllipsis" 
+                                        Text="基础配置" 
+                                        HorizontalAlignment="Left"/>
+                                    <Button  Grid.Column="1"
+                                        HorizontalAlignment="Right"
+                                        Content="提交"
+                                        Padding="0"
+                                        Command="{Binding CommitConfigurationCommand}" 
+                                        Width="80" 
+                                        Height="30"
+                                        Style="{StaticResource ButtonPrimary}"
+                                        Background="{DynamicResource PrimaryBrush}"
+                                        BorderBrush="{DynamicResource PrimaryBrush}">
+                                    </Button>
+                                </Grid>
                                 <!--Card 的一级内容-->
-                                <TextBlock 
-                                    TextWrapping="NoWrap"
-                                    Margin="10"
-                                    FontSize="16"
-                                    FontWeight="Bold"
-                                    Foreground="Black"
-                                    TextTrimming="CharacterEllipsis" 
-                                    Text="基础配置" 
-                                    HorizontalAlignment="Left"/>
+                                
                             </StackPanel>
                         </hc:Card.Header>
                         <!--Card 的内容部分-->
                         <Border CornerRadius="4,4,0,0">
                             <ListView
+                                Name="ConfigurationInfoListView"
                                 Padding="0"
                                 Height="200"
                                 Background="White" >
@@ -352,6 +387,12 @@
                                                         }" 
                                                         Grid.Column="1"/>
                                                     <Button 
+                                                        Command=
+                                                        "{
+                                                            Binding Source={x:Reference Name=ConfigurationInfoListView},
+                                                            Path=DataContext.ConfigurationButtonCommand
+                                                        }" 
+                                                        CommandParameter="{Binding .}"
                                                         Content=">" 
                                                         Grid.Column="2"
                                                         Foreground="White"
@@ -376,17 +417,36 @@
                         <!--Card 的尾部部分-->
                         <hc:Card.Header>
                             <StackPanel 
+                                Orientation="Horizontal"
                                 Margin="0">
+                                <Grid MinWidth="700">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                        TextWrapping="NoWrap"
+                                        Margin="10"
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        Foreground="Black"
+                                        TextTrimming="CharacterEllipsis" 
+                                        Text="连续调光测试" 
+                                        HorizontalAlignment="Left"/>
+                                    <Button  Grid.Column="1"
+                                        HorizontalAlignment="Right"
+                                        Content="提交"
+                                        Padding="0"
+                                        Command="{Binding CommitContinuousDimmingConfigurationCommand}" 
+                                        Width="80" 
+                                        Height="30"
+                                        Style="{StaticResource ButtonPrimary}"
+                                        Background="{DynamicResource PrimaryBrush}"
+                                        BorderBrush="{DynamicResource PrimaryBrush}">
+                                    </Button>
+                                </Grid>
                                 <!--Card 的一级内容-->
-                                <TextBlock 
-                                    TextWrapping="NoWrap"
-                                    Margin="10"
-                                    FontSize="16"
-                                    FontWeight="Bold"
-                                    Foreground="Black"
-                                    TextTrimming="CharacterEllipsis" 
-                                    Text="连续调光配置" 
-                                    HorizontalAlignment="Left"/>
+
                             </StackPanel>
                         </hc:Card.Header>
                         <!--Card 的内容部分-->
@@ -399,7 +459,7 @@
                                         IsChecked="{Binding EnableStatus}">
                                     </CheckBox>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal"  IsEnabled="{Binding EnableStatus}">
                                     <Grid HorizontalAlignment="Stretch">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -415,6 +475,7 @@
                                                 HorizontalAlignment="Left">
                                             </Label>
                                             <ListView
+                                                Name="DayConfigurationsListView"
                                                 Grid.Column="0"
                                                 Padding="0"
                                                 Height="200"
@@ -481,7 +542,13 @@
                                                                             ConverterParameter=ContinuousDimmingConfiguration
                                                                         }" 
                                                                         Grid.Column="1"/>
-                                                                    <Button 
+                                                                    <Button
+                                                                        Command=
+                                                                        "{
+                                                                            Binding Source={x:Reference Name=DayConfigurationsListView},
+                                                                            Path=DataContext.ContinuousDimmingConfigurationButtonCommand
+                                                                        }" 
+                                                                        CommandParameter="{Binding .}"
                                                                         Content=">" 
                                                                         Grid.Column="2"
                                                                         Foreground="White"
@@ -505,6 +572,7 @@
                                                 HorizontalAlignment="Left">
                                             </Label>
                                             <ListView
+                                                Name="NightConfigurationsListView"
                                                 Grid.Column="0"
                                                 Padding="0"
                                                 Height="200"
@@ -572,6 +640,12 @@
                                                                         }" 
                                                                         Grid.Column="1"/>
                                                                     <Button 
+                                                                         Command=
+                                                                        "{
+                                                                            Binding Source={x:Reference Name=NightConfigurationsListView},
+                                                                            Path=DataContext.ContinuousDimmingConfigurationButtonCommand
+                                                                        }" 
+                                                                        CommandParameter="{Binding .}"
                                                                         Content=">" 
                                                                         Grid.Column="2"
                                                                         Foreground="White"
@@ -616,7 +690,7 @@
                         </hc:Card.Header>
                         <!--Card 的内容部分-->
                         <Border CornerRadius="4,4,0,0" >
-                            <ListView
+                            <ListView Name="ControlInfoListView"
                                 Padding="0"
                                 Height="88"
                                 Background="White" >
@@ -683,6 +757,12 @@
                                                         }" 
                                                         Grid.Column="1"/>
                                                     <Button 
+                                                        Command=
+                                                        "{
+                                                            Binding Source={x:Reference Name=ControlInfoListView},
+                                                            Path=DataContext.ControlButtonCommand
+                                                        }" 
+                                                        CommandParameter="{Binding .}"
                                                         Content=">" 
                                                         Grid.Column="2"
                                                         Foreground="White"
@@ -700,5 +780,9 @@
                 </StackPanel>
             </Grid>
         </hc:ScrollViewer>
+        <Grid Name="LoadingOverlay" Background="#80000000" Visibility="{Binding LoadingFlag}" Grid.ColumnSpan="2" Margin="0,0,0,0">
+            <!-- You can add loading indicators or text here -->
+            <TextBlock Text="Loading..." HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+        </Grid>
     </Grid>
 </Page>

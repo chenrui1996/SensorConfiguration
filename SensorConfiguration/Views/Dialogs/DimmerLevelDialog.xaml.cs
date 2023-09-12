@@ -1,4 +1,6 @@
-﻿using SensorConfiguration.ViewModel.Dialogs;
+﻿using HandyControl.Controls;
+using SensorConfiguration.Models;
+using SensorConfiguration.ViewModel.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,14 +18,15 @@ using System.Windows.Shapes;
 namespace SensorConfiguration.Views.Dialogs
 {
     /// <summary>
-    /// ScanDialog.xaml 的交互逻辑
+    /// PasswordDialogs.xaml 的交互逻辑
     /// </summary>
-    public partial class ScanDialog : HandyControl.Controls.Window
+    public partial class DimmerLevelDialog : HandyControl.Controls.Window
     {
-        public ScanDialog()
+
+        public DimmerLevelDialog(BluetoothItem selectedBluetoothItem, ListViewModel listViewModel)
         {
             InitializeComponent();
-            DataContext = new ScanViewModel();
+            DataContext = new DimmerLeveDialogViewModel(selectedBluetoothItem, listViewModel);
         }
 
         private void Close_Click(object sender, RoutedEventArgs e)
@@ -37,14 +40,6 @@ namespace SensorConfiguration.Views.Dialogs
             {
                 DragMove();
             }
-        }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            var scanViewModel = DataContext as ScanViewModel;
-            scanViewModel?.StopScan();
-            scanViewModel?.ClearEvents();
-            base.OnClosed(e);
         }
     }
 }

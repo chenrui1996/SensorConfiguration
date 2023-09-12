@@ -152,7 +152,6 @@ namespace Plugin.BLE.UWP
             if (device.NativeDevice is ObservableBluetoothLEDevice nativeDevice)
             {
                 ((Device)device).ClearServices();
-                //nativeDevice.DisConnect();
                 device.Dispose();
             }
         }
